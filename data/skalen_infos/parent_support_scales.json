@@ -1,0 +1,220 @@
+{
+  "description": "Manuelle Definitionen für Eltern-Unterstützungs-Skalen aus PISA 2022",
+  "note": "Diese Skalen sind nicht als fertige WLE-Skalen in der Datenbank, aber die Items sind dokumentiert",
+  "scales": {
+    "EMOSUPS": {
+      "name_en": "Emotional Support",
+      "name_de": "Emotionale Unterstützung",
+      "description": "Erfasst emotionale Unterstützung der Eltern bei Bildung und Herausforderungen",
+      "response_scale": {
+        "1": "Stimme überhaupt nicht zu",
+        "2": "Stimme eher nicht zu",
+        "3": "Stimme eher zu",
+        "4": "Stimme völlig zu"
+      },
+      "scale_type": "agreement",
+      "items": [
+        {
+          "id": "EMOSUPS_Q01",
+          "text_en": "My parents support my educational efforts and achievements",
+          "text_de": "Meine Eltern unterstützen meine schulischen Bemühungen und Erfolge"
+        },
+        {
+          "id": "EMOSUPS_Q02",
+          "text_en": "My parents support me when I am facing difficulties at school",
+          "text_de": "Meine Eltern unterstützen mich, wenn ich Schwierigkeiten in der Schule habe"
+        },
+        {
+          "id": "EMOSUPS_Q03",
+          "text_en": "My parents encourage me to be confident",
+          "text_de": "Meine Eltern ermutigen mich, selbstbewusst zu sein"
+        }
+      ]
+    },
+    "PARINVOL": {
+      "name_en": "Parental Involvement",
+      "name_de": "Elternbeteiligung",
+      "description": "Häufigkeit verschiedener Formen elterlicher Beteiligung am Schulalltag",
+      "response_scale": {
+        "1": "Nie oder fast nie",
+        "2": "Ein- oder zweimal im Jahr",
+        "3": "Ein- oder zweimal im Monat",
+        "4": "Ein- oder zweimal in der Woche",
+        "5": "Jeden Tag oder fast jeden Tag"
+      },
+      "scale_type": "frequency_extended",
+      "items": [
+        {
+          "id": "PARINVOL_Q01",
+          "text_en": "Discuss how well my child is doing at school",
+          "text_de": "Darüber sprechen, wie es meinem Kind in der Schule geht"
+        },
+        {
+          "id": "PARINVOL_Q02",
+          "text_en": "Eat the main meal with my child around a table",
+          "text_de": "Mit meinem Kind gemeinsam am Tisch die Hauptmahlzeit einnehmen"
+        },
+        {
+          "id": "PARINVOL_Q03",
+          "text_en": "Spend time just talking to my child",
+          "text_de": "Zeit damit verbringen, einfach mit meinem Kind zu reden"
+        },
+        {
+          "id": "PARINVOL_Q04",
+          "text_en": "Discuss political or social issues with my child",
+          "text_de": "Mit meinem Kind über politische oder gesellschaftliche Themen sprechen"
+        }
+      ]
+    },
+    "PERFEED": {
+      "name_en": "Perceived Feedback from Teachers",
+      "name_de": "Wahrgenommenes Feedback der Lehrkräfte",
+      "description": "Wahrnehmung der Qualität und Häufigkeit des Lehrkraft-Feedbacks",
+      "response_scale": {
+        "1": "Nie oder fast nie",
+        "2": "Manchmal",
+        "3": "Häufig",
+        "4": "Immer oder fast immer"
+      },
+      "scale_type": "frequency",
+      "items": [
+        {
+          "id": "PERFEED_Q01",
+          "text_en": "The teacher gives me feedback on my strengths in this subject",
+          "text_de": "Die Lehrkraft gibt mir Rückmeldung über meine Stärken in diesem Fach"
+        },
+        {
+          "id": "PERFEED_Q02",
+          "text_en": "The teacher tells me in which areas I can still improve",
+          "text_de": "Die Lehrkraft sagt mir, in welchen Bereichen ich mich noch verbessern kann"
+        },
+        {
+          "id": "PERFEED_Q03",
+          "text_en": "The teacher tells me how I can improve my performance",
+          "text_de": "Die Lehrkraft sagt mir, wie ich meine Leistung verbessern kann"
+        }
+      ]
+    },
+    "HEDRES": {
+      "name_en": "Home Educational Resources",
+      "name_de": "Bildungsressourcen zu Hause",
+      "description": "Verfügbarkeit von Lernressourcen im Haushalt",
+      "response_scale": {
+        "1": "Ja",
+        "2": "Nein"
+      },
+      "scale_type": "yesno",
+      "fragestamm": "Welche der folgenden Dinge gibt es bei dir zu Hause?",
+      "items": [
+        {
+          "id": "HEDRES_Q01",
+          "text_en": "A desk and a quiet place to study",
+          "text_de": "Ein Schreibtisch und ein ruhiger Platz zum Lernen"
+        },
+        {
+          "id": "HEDRES_Q02",
+          "text_en": "A computer you can use for school work",
+          "text_de": "Ein Computer, den du für Schularbeiten nutzen kannst"
+        },
+        {
+          "id": "HEDRES_Q03",
+          "text_en": "Educational software",
+          "text_de": "Lernsoftware"
+        },
+        {
+          "id": "HEDRES_Q04",
+          "text_en": "Books to help with school work",
+          "text_de": "Bücher zur Unterstützung beim Lernen"
+        }
+      ]
+    },
+    "CULTPOSS": {
+      "name_en": "Cultural Possessions",
+      "name_de": "Kulturelle Güter",
+      "description": "Verfügbarkeit kultureller Güter im Haushalt",
+      "response_scale": {
+        "1": "Ja",
+        "2": "Nein"
+      },
+      "scale_type": "yesno",
+      "fragestamm": "Welche der folgenden Dinge gibt es bei dir zu Hause?",
+      "items": [
+        {
+          "id": "CULTPOSS_Q01",
+          "text_en": "Classic literature",
+          "text_de": "Klassische Literatur"
+        },
+        {
+          "id": "CULTPOSS_Q02",
+          "text_en": "Books of poetry",
+          "text_de": "Gedichtbände"
+        },
+        {
+          "id": "CULTPOSS_Q03",
+          "text_en": "Works of art",
+          "text_de": "Kunstwerke"
+        }
+      ]
+    },
+    "SUCHOME": {
+      "name_en": "Parental Support for Learning at Home",
+      "name_de": "Lernunterstützung zu Hause",
+      "description": "Art und Häufigkeit der elterlichen Unterstützung beim Lernen",
+      "note": "Keine spezifischen Items in verfügbaren Quellen gefunden - Platzhalter-Items basierend auf Konstrukt",
+      "response_scale": {
+        "1": "Nie oder fast nie",
+        "2": "Manchmal",
+        "3": "Häufig",
+        "4": "Immer oder fast immer"
+      },
+      "scale_type": "frequency",
+      "items": [
+        {
+          "id": "SUCHOME_Q01",
+          "text_en": "My parents help me with my homework",
+          "text_de": "Meine Eltern helfen mir bei meinen Hausaufgaben"
+        },
+        {
+          "id": "SUCHOME_Q02",
+          "text_en": "My parents check if I have done my homework",
+          "text_de": "Meine Eltern überprüfen, ob ich meine Hausaufgaben gemacht habe"
+        },
+        {
+          "id": "SUCHOME_Q03",
+          "text_en": "My parents discuss learning strategies with me",
+          "text_de": "Meine Eltern besprechen Lernstrategien mit mir"
+        }
+      ]
+    },
+    "CURSUPP": {
+      "name_en": "Parental Support for Curiosity",
+      "name_de": "Förderung von Neugier",
+      "description": "Elterliche Förderung von Neugier und Wissensdurst",
+      "note": "Keine spezifischen Items in verfügbaren Quellen gefunden - Platzhalter-Items basierend auf Konstrukt",
+      "response_scale": {
+        "1": "Stimme überhaupt nicht zu",
+        "2": "Stimme eher nicht zu",
+        "3": "Stimme eher zu",
+        "4": "Stimme völlig zu"
+      },
+      "scale_type": "agreement",
+      "items": [
+        {
+          "id": "CURSUPP_Q01",
+          "text_en": "My parents encourage me to ask questions",
+          "text_de": "Meine Eltern ermutigen mich, Fragen zu stellen"
+        },
+        {
+          "id": "CURSUPP_Q02",
+          "text_en": "My parents support my interest in learning new things",
+          "text_de": "Meine Eltern unterstützen mein Interesse daran, neue Dinge zu lernen"
+        },
+        {
+          "id": "CURSUPP_Q03",
+          "text_en": "My parents explore new topics together with me",
+          "text_de": "Meine Eltern erkunden gemeinsam mit mir neue Themen"
+        }
+      ]
+    }
+  }
+}

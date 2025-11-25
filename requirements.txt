@@ -1,0 +1,13 @@
+# Pulse of Learning - Commercial Edition
+# Requirements for Streamlit App
+
+# Core Dependencies
+streamlit>=1.30.0
+pandas>=2.0.0
+plotly>=5.17.0
+
+# Database
+# sqlite3 is included in Python standard library
+
+# Optional (for extended features)
+openpyxl>=3.1.0  # Excel export functionality

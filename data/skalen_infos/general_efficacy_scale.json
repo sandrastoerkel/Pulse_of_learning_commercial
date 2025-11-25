@@ -1,0 +1,66 @@
+{
+  "description": "Fächerübergreifende Selbstwirksamkeitsskala - anwendbar auf alle Schulfächer",
+  "note": "Diese Skala ersetzt MATHEFF für fächerübergreifende Diagnostik. Fragetexte sind bewusst allgemein formuliert.",
+  "scales": {
+    "GENEFF": {
+      "name_en": "General Academic Self-Efficacy",
+      "name_de": "Allgemeine schulische Selbstwirksamkeit",
+      "description": "Erfasst die wahrgenommene Selbstwirksamkeit bei typischen schulischen Aufgaben - fächerübergreifend",
+      "response_scale": {
+        "1": "Überhaupt nicht zuversichtlich",
+        "2": "Nicht sehr zuversichtlich",
+        "3": "Zuversichtlich",
+        "4": "Sehr zuversichtlich"
+      },
+      "scale_type": "efficacy",
+      "fragestamm": "Wie zuversichtlich fühlst du dich, die folgenden Aufgaben zu lösen?",
+      "items": [
+        {
+          "id": "GENEFF_Q01",
+          "text_de": "Informationen aus verschiedenen Quellen zusammenführen, um ein Thema zu verstehen",
+          "text_en": "Combining information from different sources to understand a topic"
+        },
+        {
+          "id": "GENEFF_Q02",
+          "text_de": "Einen komplizierten Text verstehen und die Hauptaussagen herausarbeiten",
+          "text_en": "Understanding a complex text and identifying the main points"
+        },
+        {
+          "id": "GENEFF_Q03",
+          "text_de": "Eine Präsentation oder ein Referat gut vorbereiten und durchführen",
+          "text_en": "Preparing and delivering a presentation or report well"
+        },
+        {
+          "id": "GENEFF_Q04",
+          "text_de": "Komplexe Diagramme, Tabellen oder Grafiken interpretieren und erklären",
+          "text_en": "Interpreting and explaining complex diagrams, tables or graphics"
+        },
+        {
+          "id": "GENEFF_Q05",
+          "text_de": "Ein schwieriges Problem in kleinere Schritte aufteilen und systematisch lösen",
+          "text_en": "Breaking down a difficult problem into smaller steps and solving it systematically"
+        },
+        {
+          "id": "GENEFF_Q06",
+          "text_de": "Zusammenhänge zwischen verschiedenen Themen oder Konzepten erkennen",
+          "text_en": "Recognizing connections between different topics or concepts"
+        },
+        {
+          "id": "GENEFF_Q07",
+          "text_de": "Aus Fehlern lernen und Lösungsstrategien anpassen",
+          "text_en": "Learning from mistakes and adapting solution strategies"
+        },
+        {
+          "id": "GENEFF_Q08",
+          "text_de": "Auch bei schwierigen Aufgaben durchhalten und verschiedene Lösungswege ausprobieren",
+          "text_en": "Persisting with difficult tasks and trying different solution approaches"
+        },
+        {
+          "id": "GENEFF_Q09",
+          "text_de": "Eigene Arbeitsergebnisse kritisch bewerten und verbessern",
+          "text_en": "Critically evaluating and improving own work results"
+        }
+      ]
+    }
+  }
+}
