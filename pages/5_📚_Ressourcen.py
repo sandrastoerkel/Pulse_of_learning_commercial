@@ -1457,29 +1457,45 @@ if factor_from_url and factor_from_url in CONTENT_DATABASE:
 elif 'selected_factor' not in st.session_state or st.session_state.selected_factor not in CONTENT_DATABASE:
     st.session_state.selected_factor = 'MATHEFF'  # Default
 
-# Sidebar: Faktor-Auswahl
-st.sidebar.header("📚 Bereich wählen")
-
-factor_options = {
-    content.get('name_schueler', key): key 
-    for key, content in CONTENT_DATABASE.items()
-}
-
-# Finde aktuellen Index
-current_factor = st.session_state.selected_factor
-try:
-    current_index = list(factor_options.values()).index(current_factor)
-except ValueError:
-    current_index = 0
-
-selected_display = st.sidebar.selectbox(
-    "Wähle einen Bereich:",
-    options=list(factor_options.keys()),
-    index=current_index
-)
-
-st.session_state.selected_factor = factor_options[selected_display]
 factor = st.session_state.selected_factor
+
+# ============================================
+# BEREICH-BUTTONS (immer sichtbar oben)
+# ============================================
+
+st.markdown("### 📚 Wähle einen Bereich:")
+
+# Erstelle Button-Reihen (4 Buttons pro Reihe für bessere Lesbarkeit)
+all_keys = list(CONTENT_DATABASE.keys())
+buttons_per_row = 4
+
+for row_start in range(0, len(all_keys), buttons_per_row):
+    row_keys = all_keys[row_start:row_start + buttons_per_row]
+    cols = st.columns(len(row_keys))
+
+    for i, key in enumerate(row_keys):
+        val = CONTENT_DATABASE[key]
+        btn_icon = val.get('icon', '📚')
+        btn_name = val.get('name_schueler', key)
+        is_selected = (key == factor)
+
+        with cols[i]:
+            # Markiere den aktiven Button mit einem anderen Typ
+            btn_type = "primary" if is_selected else "secondary"
+            if st.button(
+                f"{btn_icon} {btn_name}",
+                key=f"main_nav_{key}",
+                use_container_width=True,
+                type=btn_type
+            ):
+                st.session_state.selected_factor = key
+                st.rerun()
+
+st.divider()
+
+# ============================================
+# INHALT DES AUSGEWÄHLTEN BEREICHS
+# ============================================
 
 # Hole Content
 content = CONTENT_DATABASE.get(factor, {})
@@ -1487,23 +1503,35 @@ if not content:
     st.error("Bereich nicht gefunden.")
     st.stop()
 
-# ============================================
-# HEADER
-# ============================================
-
 icon = content.get('icon', '📚')
 name = content.get('name_de', factor)
 color = content.get('color', '#667eea')
 
+# Header
 st.markdown(f"""
-<div style="background: linear-gradient(135deg, {color} 0%, {color}aa 100%); 
+<div style="background: linear-gradient(135deg, {color} 0%, {color}aa 100%);
             color: white; padding: 40px; border-radius: 20px; margin-bottom: 30px;">
     <h1 style="margin: 0; font-size: 2.5em;">{icon} {name}</h1>
 </div>
 """, unsafe_allow_html=True)
 
-# Intro Text
-st.markdown(content.get('intro_text', ''))
+# Kurzinfo-Box (vorher in Sidebar)
+wissenschaft = content.get('wissenschaft', {})
+col_intro, col_info = st.columns([3, 1])
+
+with col_intro:
+    # Intro Text
+    st.markdown(content.get('intro_text', ''))
+
+with col_info:
+    st.markdown(f"""
+    <div style="background: #f8f9fa; border-radius: 10px; padding: 15px; border-left: 4px solid {color};">
+        <strong>{icon} Kurzinfo</strong><br><br>
+        <strong>Hattie d:</strong> {wissenschaft.get('hattie_d', '?')}<br>
+        <strong>Rang:</strong> #{wissenschaft.get('hattie_rank', '?')} / 252<br>
+        <strong>PISA:</strong> {wissenschaft.get('pisa_impact', '?')}
+    </div>
+    """, unsafe_allow_html=True)
 
 st.divider()
 
@@ -1545,32 +1573,3 @@ with col2:
         💡 Tipp: Fang mit EINEM Video oder EINEM Tipp an!
     </div>
     """, unsafe_allow_html=True)
-
-# ============================================
-# SIDEBAR INFO
-# ============================================
-
-st.sidebar.divider()
-
-wissenschaft = content.get('wissenschaft', {})
-st.sidebar.markdown(f"""
-### {icon} Kurzinfo
-
-| | |
-|---|---|
-| **Hattie d** | {wissenschaft.get('hattie_d', '?')} |
-| **Rang** | #{wissenschaft.get('hattie_rank', '?')} |
-| **PISA** | {wissenschaft.get('pisa_impact', '?')} |
-""")
-
-st.sidebar.divider()
-
-# Quick Links zu anderen Bereichen
-st.sidebar.markdown("### 🔗 Andere Bereiche")
-for key, val in CONTENT_DATABASE.items():
-    if key != factor:
-        btn_icon = val.get('icon', '📚')
-        btn_name = val.get('name_schueler', key)[:25]
-        if st.sidebar.button(f"{btn_icon} {btn_name}", key=f"nav_{key}", use_container_width=True):
-            st.session_state.selected_factor = key
-            st.rerun()
