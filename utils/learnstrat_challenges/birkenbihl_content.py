@@ -120,23 +120,26 @@ Neues Wissen muss an einen bestehenden Faden "andocken".
 Ohne Faden? Geht rein, geht raus. Weg.
 Mit Faden? Bleibt für immer!""",
             
-            "story": """**Das "Adipös"-Beispiel von Vera Birkenbihl**
+            "story": """**Kennst du das: Blackout?** 🧠❌
 
-Birkenbihl fragte ihr Publikum:
-"Hören Sie ein- bis zweimal pro Woche das Wort 'adipös' in den Nachrichten?"
+Du hast gelernt. Echt gelernt! Abends vor der Arbeit alles durchgelesen.
 
-Alle sagten: "Nein, nie gehört!"
+Dann sitzt du in der Klassenarbeit und... **nichts.**
+Dein Kopf ist leer. Totaler Blackout.
 
-Sie erklärte: "Adipositas = Fettleibigkeit. Adipös = übergewichtig."
+Später, nach der Arbeit, fällt dir alles wieder ein. Zu spät!
 
-Dann sagte sie: "Ab heute werden Sie das Wort ÜBERALL hören!"
+**Warum passiert das?**
+Du hattest keinen "Faden"! Du hast nur gelesen, was im Buch steht.
+Aber du hast nicht gedacht: "Was bedeutet das FÜR MICH?"
 
-**Warum?** Vorher war das Wort nur eine "Klangwolke" – 
-es ging rein und raus, weil kein Faden da war.
+Ohne eigenen Faden = Das Wissen "hängt" nicht richtig.
+Bei Stress? Weg!
 
-Jetzt HABEN sie einen Faden – und plötzlich fällt es ihnen auf!
+**Mit Faden:** Du verbindest neues Wissen mit deinen eigenen Gedanken.
+Das hält. Auch bei Stress!
 
-**Das ist das Faden-Prinzip:** Ohne Faden = unsichtbar. Mit Faden = überall!""",
+**Das ist das Faden-Prinzip:** Ohne Faden = Blackout-Gefahr. Mit Faden = bleibt!""",
             
             "experiment": {
                 "title": "Das Birkenbihl-Experiment! 🔬",
@@ -151,15 +154,15 @@ Jetzt HABEN sie einen Faden – und plötzlich fällt es ihnen auf!
 **Wichtig:** Beobachte dein eigenes Denken!
 Was für Bilder tauchen auf? Welche Erinnerungen?""",
                 "words": [
-                    {"word": "Schreibmaschine", "icon": "⌨️", "hint": "Oma? Klackern? Retro?"},
-                    {"word": "Mähdrescher", "icon": "🚜", "hint": "Bauernhof? Ernte? Riesig?"},
-                    {"word": "Leuchtstoffröhre", "icon": "💡", "hint": "Schule? Flackern? Kalt?"},
-                    {"word": "Fernsehen", "icon": "📺", "hint": "Netflix? Abends? Serien?"},
-                    {"word": "Transistor", "icon": "🔌", "hint": "Technik? Physik? Klein?"},
+                    {"word": "Emoji", "icon": "😀", "hint": "Welches benutzt du am meisten?"},
+                    {"word": "Drohne", "icon": "🚁", "hint": "Videos? Fliegen? Teuer?"},
+                    {"word": "Bluetooth", "icon": "🎧", "hint": "Kopfhörer? Verbinden?"},
+                    {"word": "Streaming", "icon": "📺", "hint": "Netflix? YouTube? Serien?"},
+                    {"word": "Algorithmus", "icon": "🤖", "hint": "TikTok? Vorgeschlagen?"},
                 ],
             },
-            
-            "fun_fact": "Das waren die Original-Wörter aus Birkenbihl's Seminar! Sie hat über 30.000 Menschen damit getestet! 📊",
+
+            "fun_fact": "Birkenbihl hat über 30.000 Menschen mit diesem Experiment getestet – und ALLE haben besser erinnert, wenn sie eigene Gedanken notierten! 📊",
         },
         
         "mittelstufe": {
@@ -182,24 +185,29 @@ Frag dich: "Was weiß ich SCHON darüber? Was fällt mir dazu ein?"
 
 So aktivierst du dein bestehendes Netz – und das Neue kann andocken.""",
             
-            "story": """**Das Meeting-Beispiel**
+            "story": """**Bulimielernen – Kennst du das?** 🤮📚
 
-Birkenbihl beschreibt folgende Situation:
+Sei ehrlich: Hast du schon mal so gelernt?
 
-Du sitzt in einem Meeting. Thema: Dienstwagen-Regelung.
-Dir fällt ein: "Damals bei Firma X hat Dietrich es geschafft, 
-ein Auto mit Sonnendach zu bekommen, obwohl er kein Anrecht hatte!"
+1. Klausur morgen → Panik
+2. Abends alles "reinprügeln"
+3. In der Klausur "auskotzen"
+4. Eine Woche später: Alles vergessen
 
-**Was tust du?**
-- ❌ FALSCH: Aufschreiben was der Chef sagt
-- ✅ RICHTIG: "Dietrich" notieren!
+Das nennt man **Bulimielernen**. Rein, raus, weg.
 
-**Warum?**
-"Dietrich" ist DEIN Faden. An diesem Faden hängt deine Erfahrung.
-Wenn du "Dietrich" liest, fällt dir ALLES wieder ein!
+**Warum funktioniert das nicht?**
+Du hast keine eigenen Fäden geknüpft!
+Du hast nur fremde Informationen kurz "geparkt" – ohne sie mit DEINEN Gedanken zu verbinden.
 
-Das Meeting-Thema hat deinen "Dietrich-Faden" aktiviert.
-Du notierst deinen Faden – und das neue Wissen hängt sich dran.""",
+**Das Faden-Prinzip ist das Gegenteil:**
+- Du fragst: "Was bedeutet das für MICH?"
+- Du notierst DEINE Assoziationen
+- Du baust DEIN Netz
+
+**Ergebnis:** Das Wissen bleibt. Nicht nur bis zur Klausur – für immer.
+
+Ab jetzt wirst du das Wort "Bulimielernen" überall hören. Weil du jetzt einen Faden hast.""",
             
             "experiment": {
                 "title": "Das wissenschaftliche Experiment 🔬",
@@ -215,17 +223,17 @@ Du notierst deinen Faden – und das neue Wissen hängt sich dran.""",
 Wer seine eigenen Gedanken notiert, erinnert MEHR
 als wer versucht, die Wörter auswendig zu lernen!""",
                 "words": [
-                    {"word": "Schreibmaschine", "icon": "⌨️", "hint": "Assoziationen notieren!"},
-                    {"word": "Mähdrescher", "icon": "🚜", "hint": "Deine Bilder, Erinnerungen!"},
-                    {"word": "Leuchtstoffröhre", "icon": "💡", "hint": "Was verbindest DU damit?"},
-                    {"word": "Fernsehen", "icon": "📺", "hint": "Persönliche Assoziationen!"},
-                    {"word": "Transistor", "icon": "🔌", "hint": "Egal wie wenig – notiere es!"},
+                    {"word": "Emoji", "icon": "😀", "hint": "Assoziationen notieren!"},
+                    {"word": "Drohne", "icon": "🚁", "hint": "Deine Bilder, Erinnerungen!"},
+                    {"word": "Bluetooth", "icon": "🎧", "hint": "Was verbindest DU damit?"},
+                    {"word": "Streaming", "icon": "📺", "hint": "Persönliche Assoziationen!"},
+                    {"word": "Algorithmus", "icon": "🤖", "hint": "Egal wie wenig – notiere es!"},
                 ],
             },
-            
-            "fun_fact": "Birkenbihl trainierte Top-Manager bei IBM, Siemens und BMW mit dieser Methode! 💼",
+
+            "fun_fact": "Das Gegenteil von Bulimielernen ist das Faden-Prinzip – und es funktioniert nicht nur für Klausuren, sondern fürs ganze Leben! 🧠",
         },
-        
+
         "oberstufe": {
             "intro": """**Das Faden-Prinzip: Neurobiologische Grundlagen**
 
@@ -248,22 +256,26 @@ Dies entspricht dem Elaboration-Effekt (d=0.56 nach Hattie)
 kombiniert mit Self-Reference-Effekt (tiefere Verarbeitung 
 durch persönlichen Bezug).""",
             
-            "story": """**Das Adipositas-Phänomen**
+            "story": """**Das Bulimielernen-Phänomen**
 
-Birkenbihl fragte: "Hören Sie 1-2x pro Woche 'adipös' in den Nachrichten?"
+Kennst du den Begriff "Bulimielernen"?
+Reinfressen → Auskotzen → Vergessen.
 
-Publikum: "Nein, nie!"
-
-Sie erklärt: "Adipositas = Fettleibigkeit. Es ist ein medizinischer Fachbegriff."
-
-Dann die Vorhersage: "Ab heute werden Sie das Wort ÜBERALL hören!"
+Die meisten Schüler und Studenten lernen so:
+- Kurz vor der Klausur alles "reinprügeln"
+- In der Prüfung "ausspucken"
+- Eine Woche später: fast alles weg
 
 **Neurobiologische Erklärung:**
-Ohne semantisches Netzwerk zum Begriff = "Klangwolke" (keine Verarbeitung)
-Mit aktiviertem Netzwerk = Reticular Activating System filtert es durch
+Ohne elaborative Verarbeitung (eigene Assoziationen) = nur oberflächliche Enkodierung.
+Das Wissen wird im Arbeitsgedächtnis "geparkt", erreicht aber nie das Langzeitgedächtnis.
 
-**Das ist Priming + Baader-Meinhof-Phänomen:**
-Sobald ein "Faden" existiert, wird das Pattern erkannt.""",
+**Das Faden-Prinzip ist das Gegenmittel:**
+Eigene Assoziationen = tiefe Verarbeitung = stabile Langzeitspeicherung.
+
+**Baader-Meinhof-Effekt:**
+Ab jetzt wirst du "Bulimielernen" überall hören – bei Freunden, in Podcasts, online.
+Warum? Weil du jetzt einen Faden hast. Vorher war es eine "Klangwolke".""",
             
             "experiment": {
                 "title": "Replikation des Original-Experiments 🔬",
@@ -282,15 +294,15 @@ eine Kontrollgruppe, die aktiv memorieren sollte.
 **Mechanismus:**
 Elaborative Rehearsal > Maintenance Rehearsal""",
                 "words": [
-                    {"word": "Schreibmaschine", "icon": "⌨️", "hint": "Semantische Assoziationen"},
-                    {"word": "Mähdrescher", "icon": "🚜", "hint": "Episodische Erinnerungen"},
-                    {"word": "Leuchtstoffröhre", "icon": "💡", "hint": "Sensorische Verknüpfungen"},
-                    {"word": "Fernsehen", "icon": "📺", "hint": "Emotionale Konnotationen"},
-                    {"word": "Transistor", "icon": "🔌", "hint": "Konzeptuelle Verbindungen"},
+                    {"word": "Emoji", "icon": "😀", "hint": "Semantische Assoziationen"},
+                    {"word": "Drohne", "icon": "🚁", "hint": "Episodische Erinnerungen"},
+                    {"word": "Bluetooth", "icon": "🎧", "hint": "Sensorische Verknüpfungen"},
+                    {"word": "Streaming", "icon": "📺", "hint": "Emotionale Konnotationen"},
+                    {"word": "Algorithmus", "icon": "🤖", "hint": "Konzeptuelle Verbindungen"},
                 ],
             },
-            
-            "fun_fact": "Birkenbihl nannte sich selbst 'Gehirn-Benutzerin' – sie brachte komplexe Neurowissenschaft in alltagstaugliche Methoden! 🧠",
+
+            "fun_fact": "Bulimielernen ist ineffizient, weil es nur Maintenance Rehearsal nutzt. Das Faden-Prinzip nutzt Elaborative Rehearsal – der Unterschied in der Behaltensleistung ist enorm! 🧠",
         },
         
         "paedagogen": {
