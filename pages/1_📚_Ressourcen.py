@@ -1833,26 +1833,6 @@ Bjork, R. A., & Bjork, E. L. (2011). Making things hard on yourself, but in a go
 Deslauriers, L., McCarty, L. S., Miller, K., Callaghan, K., & Kestin, G. (2019). Measuring actual learning versus feeling of learning in response to being actively engaged in the classroom. Proceedings of the National Academy of Sciences, 116(39), 19251-19257.
                 """)
 
-    # Zusammenfassungs-Box am Ende
-    st.divider()
-    st.subheader("📋 Die 7 Techniken auf einen Blick")
-    st.markdown("""
-| Technik | Evidenz | Quelle | Kernidee |
-|---------|---------|--------|----------|
-| 🔄 Active Recall | 🟢 HOCH | Dunlosky 2013, Roediger 2006 | Sich selbst abfragen statt nur lesen |
-| 📅 Spaced Repetition | 🟢 HOCH | Dunlosky 2013, Cepeda 2006 | In wachsenden Abständen wiederholen |
-| 👶 Feynman-Methode | 🟢 HOCH | Dunlosky 2013 (Elaboration) | So einfach erklären, dass ein Kind es versteht |
-| 🏰 Loci-Methode | 🟡 MITTEL | Dunlosky 2013 (Mnemonics) | Mit bekannten Orten verknüpfen |
-| 🗺️ Mind Mapping | 🟡 MITTEL | Farrand 2002, Nesbit 2006 | Visuell als Gedankenkarte darstellen |
-| 🍅 Pomodoro | 🟡 MITTEL | Cirillo 2006 (keine RCTs) | 25 Min fokussiert, 5 Min Pause |
-| 👥 Lehren | 🟢 HOCH | Dunlosky 2013, Fiorella 2013 | Anderen erklären = doppelt lernen |
-
-💡 **Zur Einordnung:**
-- 🟢 HOCH = Mehrere hochwertige Studien bestätigen die Wirksamkeit
-- 🟡 MITTEL = Gute Evidenz, aber weniger umfangreich erforscht oder kontextabhängig
-- Quellen: Dunlosky et al. (2013) "Improving Students' Learning", Hattie (2023) "Visible Learning"
-    """)
-
 # ============================================
 # MAIN APP
 # ============================================
