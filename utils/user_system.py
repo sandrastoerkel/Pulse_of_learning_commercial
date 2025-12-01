@@ -4,7 +4,6 @@
 
 Einfaches Benutzer-System für die Ressourcen-Seite.
 Ermöglicht persistente Speicherung aller Gamification-Daten pro Schüler.
-Inkl. Altersstufen-Auswahl und Avatar-System (DiceBear).
 
 Verwendung:
     from utils.user_system import render_user_login, get_current_user, is_logged_in
@@ -356,7 +355,7 @@ def render_login_form():
                 color: white; padding: 20px; border-radius: 15px; margin-bottom: 20px;">
         <h3 style="margin: 0 0 10px 0;">👋 Willkommen bei den Lern-Ressourcen!</h3>
         <p style="margin: 0; opacity: 0.9;">
-            Erstelle deinen Account und gestalte deinen Avatar!
+            Melde dich an, um deine Fortschritte zu speichern!
         </p>
     </div>
     """, unsafe_allow_html=True)
@@ -420,48 +419,16 @@ def render_login_form():
                 """, unsafe_allow_html=True)
 
                 if st.button(f"Wählen", key=f"age_{age_key}", use_container_width=True):
-                    st.session_state.registration_age = age_key
-                    st.session_state.registration_step = 3
+                    # Direkt einloggen ohne Avatar-Auswahl
+                    name = st.session_state.registration_name
+                    user = login_user(name, age_key)
+                    st.balloons()
+                    st.success(f"🎉 Willkommen, {name}!")
                     st.rerun()
 
         st.markdown("")
         if st.button("⬅️ Zurück", key="back_to_step1"):
             st.session_state.registration_step = 1
-            st.rerun()
-
-    # === SCHRITT 3: Avatar wählen ===
-    elif st.session_state.registration_step == 3:
-        name = st.session_state.registration_name
-        age = st.session_state.registration_age
-        age_info = AVATAR_STYLES_BY_AGE.get(age, AVATAR_STYLES_BY_AGE["unterstufe"])
-
-        st.markdown(f"### Schritt 3: Wähle deinen Avatar!")
-        st.markdown(f"*{age_info['description']} für {age_info['label']}*")
-
-        styles = age_info['styles']
-        cols = st.columns(len(styles))
-
-        for i, style in enumerate(styles):
-            with cols[i]:
-                # Avatar-Vorschau
-                preview_url = f"https://api.dicebear.com/7.x/{style}/svg?seed={name}&backgroundColor=b6e3f4&radius=50"
-                st.markdown(f"""
-                <div style="text-align: center; padding: 15px; background: #f8f9fa;
-                            border-radius: 15px; margin-bottom: 10px;">
-                    <img src="{preview_url}" style="width: 100px; height: 100px; border-radius: 50%;">
-                </div>
-                """, unsafe_allow_html=True)
-
-                if st.button("Wählen", key=f"avatar_{style}", use_container_width=True, type="primary"):
-                    # User erstellen und einloggen
-                    user = login_user(name, age, style)
-                    st.balloons()
-                    st.success(f"🎉 Willkommen, {name}! Dein Avatar ist bereit!")
-                    st.rerun()
-
-        st.markdown("")
-        if st.button("⬅️ Zurück zur Stufen-Auswahl", key="back_to_step2"):
-            st.session_state.registration_step = 2
             st.rerun()
 
 def render_logged_in_view(user: Dict, show_stats: bool = True):
@@ -511,20 +478,12 @@ def render_logged_in_view(user: Dict, show_stats: bool = True):
     </div>
     """, unsafe_allow_html=True)
 
-    # Buttons: Avatar bearbeiten & Ausloggen
-    col1, col2, col3 = st.columns([5, 1, 1])
+    # Logout-Button
+    col1, col2 = st.columns([6, 1])
     with col2:
-        if st.button("🎨", help="Avatar anpassen", key="edit_avatar_btn"):
-            st.session_state.show_avatar_editor = True
-            st.rerun()
-    with col3:
         if st.button("🚪", help="Abmelden / Benutzer wechseln", key="logout_btn"):
             logout_user()
             st.rerun()
-
-    # Avatar-Editor Popup
-    if st.session_state.get("show_avatar_editor", False):
-        render_avatar_editor(user)
 
 def render_user_stats_card(user: Dict):
     """Rendert eine detaillierte Statistik-Karte."""
@@ -584,145 +543,3 @@ def render_user_stats_card(user: Dict):
     </div>
     """, unsafe_allow_html=True)
 
-# ============================================
-# AVATAR EDITOR
-# ============================================
-
-def render_avatar_editor(user: Dict):
-    """Rendert den Avatar-Editor zum Anpassen des Avatars."""
-
-    with st.expander("🎨 Avatar anpassen", expanded=True):
-        display_name = user.get('display_name', 'default')
-        level = user.get('level', 1)
-        age_group = user.get('age_group', 'unterstufe')
-
-        # Aktuelle Avatar-Einstellungen laden
-        avatar_settings = user.get('avatar_settings', {})
-        if isinstance(avatar_settings, str):
-            try:
-                avatar_settings = json.loads(avatar_settings)
-            except:
-                avatar_settings = {}
-
-        current_style = avatar_settings.get('style', 'adventurer')
-        current_bg = avatar_settings.get('background', 'b6e3f4')
-
-        col_preview, col_options = st.columns([1, 2])
-
-        with col_preview:
-            st.markdown("**Vorschau:**")
-            # Aktuelle Vorschau
-            preview_style = st.session_state.get('preview_style', current_style)
-            preview_bg = st.session_state.get('preview_bg', current_bg)
-
-            if preview_bg == "none":
-                bg_param = ""
-            elif preview_bg == "gradient":
-                bg_param = "&backgroundColor=b6e3f4,c0aede,ffd5dc"
-            else:
-                bg_param = f"&backgroundColor={preview_bg}"
-
-            preview_url = f"https://api.dicebear.com/7.x/{preview_style}/svg?seed={display_name}{bg_param}&radius=50"
-
-            st.markdown(f"""
-            <div style="text-align: center; padding: 20px; background: #f8f9fa; border-radius: 15px;">
-                <img src="{preview_url}" style="width: 120px; height: 120px; border-radius: 50%;
-                          border: 4px solid #667eea;">
-                <div style="margin-top: 10px; font-weight: bold;">{display_name}</div>
-            </div>
-            """, unsafe_allow_html=True)
-
-        with col_options:
-            # Avatar-Stil wählen
-            st.markdown("**Avatar-Stil:**")
-            age_info = AVATAR_STYLES_BY_AGE.get(age_group, AVATAR_STYLES_BY_AGE["unterstufe"])
-            available_styles = age_info['styles']
-
-            style_cols = st.columns(len(available_styles))
-            for i, style in enumerate(available_styles):
-                with style_cols[i]:
-                    mini_url = f"https://api.dicebear.com/7.x/{style}/svg?seed={display_name}&size=50"
-                    is_selected = (preview_style == style)
-                    border = "3px solid #667eea" if is_selected else "1px solid #ddd"
-
-                    st.markdown(f"""
-                    <div style="text-align: center; cursor: pointer;">
-                        <img src="{mini_url}" style="width: 50px; height: 50px; border-radius: 50%; border: {border};">
-                    </div>
-                    """, unsafe_allow_html=True)
-
-                    if st.button("○" if not is_selected else "●", key=f"style_{style}", use_container_width=True):
-                        st.session_state.preview_style = style
-                        st.rerun()
-
-            # Hintergrundfarbe wählen
-            st.markdown("")
-            st.markdown("**Hintergrundfarbe:**")
-
-            unlocked_bgs = get_unlocked_options(user, "backgrounds")
-            bg_cols = st.columns(4)
-
-            for i, (bg_key, bg_info) in enumerate(AVATAR_UNLOCKABLES["backgrounds"].items()):
-                col_idx = i % 4
-                is_unlocked = bg_key in unlocked_bgs
-                is_selected = (preview_bg == bg_key)
-
-                with bg_cols[col_idx]:
-                    if bg_key == "none":
-                        color_display = "transparent"
-                        style = "background: white; border: 2px dashed #ccc;"
-                    elif bg_key == "gradient":
-                        style = "background: linear-gradient(135deg, #b6e3f4, #c0aede, #ffd5dc);"
-                    else:
-                        style = f"background: #{bg_key};"
-
-                    if not is_unlocked:
-                        style += " opacity: 0.3;"
-
-                    border_style = "3px solid #667eea" if is_selected else "1px solid #ddd"
-
-                    st.markdown(f"""
-                    <div style="text-align: center; margin-bottom: 5px;">
-                        <div style="width: 30px; height: 30px; border-radius: 50%; {style}
-                                    border: {border_style}; margin: 0 auto;"></div>
-                        <div style="font-size: 0.7em; color: {'#666' if is_unlocked else '#ccc'};">
-                            {bg_info['name'] if is_unlocked else f"🔒 Lvl {bg_info['unlock_level']}"}
-                        </div>
-                    </div>
-                    """, unsafe_allow_html=True)
-
-                    if is_unlocked:
-                        if st.button("○" if not is_selected else "●", key=f"bg_{bg_key}", use_container_width=True):
-                            st.session_state.preview_bg = bg_key
-                            st.rerun()
-
-        # Speichern & Schließen Buttons
-        st.markdown("---")
-        col_save, col_cancel = st.columns(2)
-
-        with col_save:
-            if st.button("💾 Speichern", use_container_width=True, type="primary"):
-                new_settings = {
-                    "style": st.session_state.get('preview_style', current_style),
-                    "background": st.session_state.get('preview_bg', current_bg)
-                }
-                update_user_avatar(user['user_id'], new_settings)
-
-                # Session State aufräumen
-                st.session_state.show_avatar_editor = False
-                if 'preview_style' in st.session_state:
-                    del st.session_state.preview_style
-                if 'preview_bg' in st.session_state:
-                    del st.session_state.preview_bg
-
-                st.success("Avatar gespeichert! ✨")
-                st.rerun()
-
-        with col_cancel:
-            if st.button("❌ Abbrechen", use_container_width=True):
-                st.session_state.show_avatar_editor = False
-                if 'preview_style' in st.session_state:
-                    del st.session_state.preview_style
-                if 'preview_bg' in st.session_state:
-                    del st.session_state.preview_bg
-                st.rerun()

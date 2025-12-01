@@ -216,7 +216,7 @@ def create_bar_chart(scores_df):
 def navigate_to_resources(scale_name):
     """Navigiert zur Ressourcen-Seite für eine bestimmte Skala"""
     st.session_state.selected_factor = scale_name
-    st.switch_page("pages/5_📚_Ressourcen.py")
+    st.switch_page("pages/1_📚_Ressourcen.py")
 
 
 # ============================================
