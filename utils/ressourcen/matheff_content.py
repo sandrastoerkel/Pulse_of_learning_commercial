@@ -27,31 +27,6 @@ def render_matheff_altersstufen(color: str):
     # TAB 1: INTERAKTIV (Hattie + Bandura Challenge)
     # ==========================================
     with tab_interaktiv:
-        st.header("🎮 Challenges")
-
-        col1, col2 = st.columns([2, 1])
-
-        with col1:
-            st.markdown("""
-            Trainiere deine Selbstwirksamkeit durch **realistische Selbsteinschätzung** –
-            basierend auf John Hattie's Forschung zu "Student Expectations" (d = 1.33).
-            """)
-
-        with col2:
-            st.info("""
-            🔬 **Wissenschaft:**
-
-            Wenn du deine eigene Erwartung
-            übertriffst, speichert dein
-            Gehirn: *"Ich kann mehr als
-            ich dachte!"*
-
-            Das ist Selbstwirksamkeit
-            in Aktion.
-            """)
-
-        st.divider()
-
         # Gamification Widgets einbinden
         if HAS_GAMIFICATION:
             # Bandura-Challenge

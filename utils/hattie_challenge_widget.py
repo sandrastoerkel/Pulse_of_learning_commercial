@@ -173,14 +173,32 @@ def render_challenge_phase1(user_id: str, stats: dict, color: str):
     age_group = st.session_state.get("current_user_age_group", "unterstufe")
     is_oberstufe = age_group == "oberstufe"
 
-    st.markdown("""
-    ### 🎯 Starte eine neue Challenge
+    # Intro und Wissenschafts-Box
+    col1, col2 = st.columns([2, 1])
 
-    **So funktioniert's:**
-    1. Wähle ein Fach und beschreibe die Aufgabe
-    2. Schätze ehrlich: Welche Note (oder wie viel Prozent) wirst du erreichen?
-    3. Mach die Aufgabe und trag dann dein echtes Ergebnis ein
-    """)
+    with col1:
+        st.markdown("""
+        Trainiere deine Selbstwirksamkeit durch **realistische Selbsteinschätzung** –
+        basierend auf John Hattie's Forschung zu "Student Expectations" (d = 1.33).
+
+        **So funktioniert's:**
+        1. Wähle ein Fach und beschreibe die Aufgabe
+        2. Schätze ehrlich: Welche Note (oder wie viel Prozent) wirst du erreichen?
+        3. Mach die Aufgabe und trag dann dein echtes Ergebnis ein
+        """)
+
+    with col2:
+        st.info("""
+        🔬 **Wissenschaft:**
+
+        Wenn du deine eigene Erwartung
+        übertriffst, speichert dein
+        Gehirn: *"Ich kann mehr als
+        ich dachte!"*
+
+        Das ist Selbstwirksamkeit
+        in Aktion.
+        """)
 
     # Auswahl AUSSERHALB des Formulars (damit sie reaktiv ist)
     st.markdown("**📊 Was möchtest du schätzen?**")
