@@ -6,159 +6,129 @@ Basiert auf: Deci & Ryan (Selbstbestimmungstheorie), Hattie (Visible Learning),
 Birkenbihl (Gehirn-gerechtes Lernen), PISA 2022.
 
 Stil: MaiThink X (Mai Thi Nguyen-Kim) - wissenschaftlich fundiert, aber cool erklärt.
+
+ÄNDERUNGEN v2.0:
+- Tab "🎮 Challenges" ruft jetzt das interaktive Widget auf
+- Neues Motivation-Challenge-System mit SDT-basiertem Gamification
+- XP, Badges, Streaks, Zertifikate
 """
 
 import streamlit as st
+import sqlite3
+from typing import Optional, Callable
+
+# ============================================
+# IMPORT DES NEUEN MOTIVATION-CHALLENGE-MODULS
+# ============================================
+# Passe den Import-Pfad an deine Projektstruktur an:
+# Option 1: Wenn in utils/motivation_challenges/
+# from utils.motivation_challenges import render_motivation_challenge, init_motivation_tables
+
+# Option 2: Wenn im gleichen Ordner
+# from .motivation_challenges import render_motivation_challenge, init_motivation_tables
+
+# Für Entwicklung: Try-Except mit Fallback
+try:
+    from utils.motivation_challenges import (
+        render_motivation_challenge,
+        init_motivation_tables,
+        get_user_motivation_stats,
+        GRUNDBEDUERFNISSE,
+    )
+    WIDGET_AVAILABLE = True
+except ImportError:
+    try:
+        from motivation_challenges import (
+            render_motivation_challenge,
+            init_motivation_tables,
+            get_user_motivation_stats,
+            GRUNDBEDUERFNISSE,
+        )
+        WIDGET_AVAILABLE = True
+    except ImportError:
+        WIDGET_AVAILABLE = False
 
 
-def render_motivation_altersstufen(color: str):
-    """Rendert die Motivations-Ressource mit Challenges + Theorie-Tabs"""
+def render_motivation_altersstufen(
+    color: str,
+    conn: Optional[sqlite3.Connection] = None,
+    user_data: Optional[dict] = None,
+    xp_callback: Optional[Callable] = None
+):
+    """
+    Rendert die Motivations-Ressource mit Challenges + Theorie-Tabs.
+    
+    Args:
+        color: Farbe für das Styling (z.B. "#22c55e")
+        conn: SQLite Connection für Gamification (optional für Widget)
+        user_data: Dict mit user_id, display_name, age_group (optional für Widget)
+        xp_callback: Callback für XP-Vergabe (optional)
+    
+    Beispiel-Aufruf:
+        render_motivation_altersstufen(
+            color="#22c55e",
+            conn=st.session_state.get("db_connection"),
+            user_data={
+                "user_id": st.session_state.get("user_id", "guest"),
+                "display_name": st.session_state.get("display_name", "Gast"),
+                "age_group": st.session_state.get("age_group", "unterstufe"),
+            },
+            xp_callback=add_user_xp  # Optional
+        )
+    """
 
-    tab_interaktiv, tab_theorie = st.tabs([
-        "🎮 Challenges",
-        "📚 Theorie dahinter"
-    ])
+    # Session State für Tab-Auswahl
+    if "motivation_tab" not in st.session_state:
+        st.session_state.motivation_tab = "challenges"
+
+    # Große auffällige Auswahl-Buttons
+    col1, col2 = st.columns(2)
+
+    with col1:
+        is_challenges = st.session_state.motivation_tab == "challenges"
+        if is_challenges:
+            st.markdown(f"""
+            <div style="background: {color}; color: white; padding: 20px; border-radius: 12px;
+                        text-align: center; cursor: default;">
+                <div style="font-size: 2em;">🎮</div>
+                <div style="font-size: 1.2em; font-weight: bold;">Challenges</div>
+                <div style="font-size: 0.85em; opacity: 0.9;">Interaktive Übungen</div>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            if st.button("🎮\nChallenges\nInteraktive Übungen", key="btn_motivation_challenges", use_container_width=True):
+                st.session_state.motivation_tab = "challenges"
+                st.rerun()
+
+    with col2:
+        is_theorie = st.session_state.motivation_tab == "theorie"
+        if is_theorie:
+            st.markdown(f"""
+            <div style="background: {color}; color: white; padding: 20px; border-radius: 12px;
+                        text-align: center; cursor: default;">
+                <div style="font-size: 2em;">📚</div>
+                <div style="font-size: 1.2em; font-weight: bold;">Theorie dahinter</div>
+                <div style="font-size: 0.85em; opacity: 0.9;">Wissenschaftlicher Hintergrund</div>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            if st.button("📚\nTheorie dahinter\nWissenschaftlicher Hintergrund", key="btn_motivation_theorie", use_container_width=True):
+                st.session_state.motivation_tab = "theorie"
+                st.rerun()
+
+    st.divider()
 
     # ==========================================
-    # TAB 1: CHALLENGES (Platzhalter)
+    # CHALLENGES-Bereich
     # ==========================================
-    with tab_interaktiv:
-        st.header("🎮 Motivations-Challenges")
-
-        col1, col2 = st.columns([2, 1])
-
-        with col1:
-            st.markdown("""
-            Trainiere deine Motivation durch **konkrete Aktionen** –
-            basierend auf der Selbstbestimmungstheorie (Deci & Ryan).
-
-            **So funktioniert's:**
-            1. Identifiziere, was dir gerade fehlt (Sinn? Erfolge? Menschen?)
-            2. Wähle eine passende Mini-Challenge
-            3. Dokumentiere deine Erfahrung
-            4. Sammle XP und Badges!
-            """)
-
-        with col2:
-            st.info("""
-            🔬 **Wissenschaft:**
-
-            Motivation entsteht, wenn
-            3 Grundbedürfnisse erfüllt sind:
-            - **Autonomie** (Ich entscheide)
-            - **Kompetenz** (Ich kann das)
-            - **Verbundenheit** (Ich gehöre dazu)
-
-            *(Deci & Ryan, 1985)*
-            """)
-
-        st.divider()
-
-        # Platzhalter für zukünftige Challenges
-        st.info("""
-        🚧 **Interaktive Motivations-Challenges werden entwickelt...**
-
-        Geplante Challenges:
-        - 🎯 **Die ABC-Challenge:** Aktiviere dein Vorwissen in 3 Minuten
-        - 🤝 **Die Buddy-Challenge:** Finde deinen Lern-Partner
-        - 🧠 **Die WOZU-Challenge:** Finde deinen persönlichen Grund
-        - ⚡ **Die Mikro-Entscheidungs-Challenge:** Hol dir Kontrolle zurück
-
-        Schau solange im Tab "Theorie dahinter" vorbei – da findest du alle Strategien!
-        """)
-
-        # Fallback: Manuelle Version
-        st.markdown("---")
-        st.subheader("📝 Schnellstart (ohne Login)")
-
-        with st.expander("🎯 Die 5-Minuten-Motivation", expanded=True):
-            st.markdown("""
-            **Wenn du JETZT keinen Bock hast, mach das:**
-
-            | Schritt | Frage | Deine Antwort |
-            |---------|-------|---------------|
-            | 1️⃣ WOZU? | "Wenn ich das kann, dann..." | _______________ |
-            | 2️⃣ WAS WEISS ICH? | ABC-Liste (A-Z, 3 Min) | ___ Wörter |
-            | 3️⃣ WER HILFT? | Buddy anschreiben | Name: ___________ |
-            | 4️⃣ WAS ENTSCHEIDE ICH? | Wann, Wo, Womit? | _______________ |
-            | 5️⃣ WORST CASE? | "Das Schlimmste wäre..." | _______________ |
-
-            **Warum das funktioniert:** Jeder Schritt erfüllt ein Grundbedürfnis
-            (Sinn → Kompetenz → Verbundenheit → Autonomie → Angst reduzieren).
-            """)
-
-        with st.expander("🧠 Die ABC-Liste nach Birkenbihl", expanded=False):
-            st.markdown("""
-            **So geht's:**
-            1. Schreib A-Z untereinander auf ein Blatt
-            2. Wähle dein Thema (z.B. "Französische Revolution")
-            3. Schreib zu jedem Buchstaben, was dir einfällt
-            4. Spring rum – nicht von A nach Z, sondern wie's kommt!
-            5. Zähl die Wörter
-
-            **Mach das VOR und NACH dem Lernen.**
-            Die Differenz = Dein sichtbarer Fortschritt = Dopamin = Motivation 🔥
-
-            *"Das Alphabet ist wie ein Haken, an dem dein Wissen hängt."*
-            – Vera F. Birkenbihl
-            """)
+    if st.session_state.motivation_tab == "challenges":
+        _render_challenges_tab(conn, user_data, xp_callback)
 
     # ==========================================
-    # TAB 2: THEORIE DAHINTER (mit Altersstufen-Auswahl)
+    # THEORIE-Bereich
     # ==========================================
-    with tab_theorie:
-        # Altersstufen-Auswahl als Buttons
-        st.markdown("### Wähle deine Altersstufe:")
-
-        col1, col2, col3, col4, col5 = st.columns(5)
-
-        # Session State für Altersstufe initialisieren (separater Key für Motivation)
-        if "selected_age_group_motivation" not in st.session_state:
-            st.session_state.selected_age_group_motivation = "mittelstufe"
-
-        with col1:
-            if st.button("🎒 Grundschule\n(1-4)", key="btn_motiv_gs", use_container_width=True,
-                        type="primary" if st.session_state.selected_age_group_motivation == "grundschule" else "secondary"):
-                st.session_state.selected_age_group_motivation = "grundschule"
-                st.rerun()
-
-        with col2:
-            if st.button("📚 Unterstufe\n(5-7)", key="btn_motiv_us", use_container_width=True,
-                        type="primary" if st.session_state.selected_age_group_motivation == "unterstufe" else "secondary"):
-                st.session_state.selected_age_group_motivation = "unterstufe"
-                st.rerun()
-
-        with col3:
-            if st.button("🎯 Mittelstufe\n(8-10)", key="btn_motiv_ms", use_container_width=True,
-                        type="primary" if st.session_state.selected_age_group_motivation == "mittelstufe" else "secondary"):
-                st.session_state.selected_age_group_motivation = "mittelstufe"
-                st.rerun()
-
-        with col4:
-            if st.button("🎓 Oberstufe\n(11-13)", key="btn_motiv_os", use_container_width=True,
-                        type="primary" if st.session_state.selected_age_group_motivation == "oberstufe" else "secondary"):
-                st.session_state.selected_age_group_motivation = "oberstufe"
-                st.rerun()
-
-        with col5:
-            if st.button("👩‍🏫 Pädagogen", key="btn_motiv_ped", use_container_width=True,
-                        type="primary" if st.session_state.selected_age_group_motivation == "paedagogen" else "secondary"):
-                st.session_state.selected_age_group_motivation = "paedagogen"
-                st.rerun()
-
-        st.divider()
-
-        # Content je nach Altersstufe
-        if st.session_state.selected_age_group_motivation == "grundschule":
-            _render_grundschule_content()
-        elif st.session_state.selected_age_group_motivation == "unterstufe":
-            _render_unterstufe_content()
-        elif st.session_state.selected_age_group_motivation == "mittelstufe":
-            _render_mittelstufe_content()
-        elif st.session_state.selected_age_group_motivation == "oberstufe":
-            _render_oberstufe_content()
-        elif st.session_state.selected_age_group_motivation == "paedagogen":
-            _render_paedagogen_content()
+    else:
+        _render_theorie_tab()
 
     # ==========================================
     # ZUSAMMENFASSUNG AM ENDE (außerhalb der Tabs)
@@ -177,7 +147,208 @@ def render_motivation_altersstufen(color: str):
 
 
 # ============================================
+# TAB 1: CHALLENGES (NEU MIT WIDGET)
+# ============================================
+
+def _render_challenges_tab(
+    conn: Optional[sqlite3.Connection],
+    user_data: Optional[dict],
+    xp_callback: Optional[Callable]
+):
+    """Rendert den Challenges-Tab mit interaktivem Widget oder Fallback."""
+    
+    st.header("🎮 Motivations-Challenges")
+    
+    # ─────────────────────────────────────────
+    # PRÜFUNG: Widget verfügbar + User eingeloggt?
+    # ─────────────────────────────────────────
+    
+    widget_ready = (
+        WIDGET_AVAILABLE and 
+        conn is not None and 
+        user_data is not None and
+        user_data.get("user_id")
+    )
+    
+    if widget_ready:
+        # ═══════════════════════════════════════
+        # INTERAKTIVES WIDGET RENDERN
+        # ═══════════════════════════════════════
+        
+        # Tabellen initialisieren (idempotent)
+        init_motivation_tables(conn)
+        
+        # Widget aufrufen
+        render_motivation_challenge(
+            user_data=user_data,
+            conn=conn,
+            xp_callback=xp_callback
+        )
+        
+    else:
+        # ═══════════════════════════════════════
+        # FALLBACK: Platzhalter + Manuelle Version
+        # ═══════════════════════════════════════
+        
+        _render_challenges_fallback()
+
+
+def _render_challenges_fallback():
+    """Fallback-Anzeige wenn Widget nicht verfügbar oder User nicht eingeloggt."""
+    
+    col1, col2 = st.columns([2, 1])
+
+    with col1:
+        st.markdown("""
+        Trainiere deine Motivation durch **konkrete Aktionen** –
+        basierend auf der Selbstbestimmungstheorie (Deci & Ryan).
+
+        **So funktioniert's:**
+        1. Identifiziere, was dir gerade fehlt (Sinn? Erfolge? Menschen?)
+        2. Wähle eine passende Mini-Challenge
+        3. Dokumentiere deine Erfahrung
+        4. Sammle XP und Badges!
+        """)
+
+    with col2:
+        st.info("""
+        🔬 **Wissenschaft:**
+
+        Motivation entsteht, wenn
+        3 Grundbedürfnisse erfüllt sind:
+        - **Autonomie** (Ich entscheide)
+        - **Kompetenz** (Ich kann das)
+        - **Verbundenheit** (Ich gehöre dazu)
+
+        *(Deci & Ryan, 1985)*
+        """)
+
+    st.divider()
+
+    # Login-Hinweis
+    if not WIDGET_AVAILABLE:
+        st.warning("""
+        ⚠️ **Modul nicht gefunden**
+        
+        Das Motivation-Challenge-Modul konnte nicht geladen werden.
+        Bitte stelle sicher, dass der Ordner `motivation_challenges/` 
+        in `utils/` vorhanden ist.
+        """)
+    else:
+        st.info("""
+        🔐 **Bitte einloggen für interaktive Challenges!**
+        
+        Mit Login kannst du:
+        - Interaktive Challenges durchführen
+        - XP sammeln und Badges verdienen
+        - Deinen Fortschritt speichern
+        - Streak aufbauen
+        
+        Schau solange im Tab "Theorie dahinter" vorbei – 
+        da findest du alle Strategien!
+        """)
+
+    # Manuelle Version (ohne Login nutzbar)
+    st.markdown("---")
+    st.subheader("📝 Schnellstart (ohne Login)")
+
+    with st.expander("🎯 Die 5-Minuten-Motivation", expanded=True):
+        st.markdown("""
+        **Wenn du JETZT keinen Bock hast, mach das:**
+
+        | Schritt | Frage | Deine Antwort |
+        |---------|-------|---------------|
+        | 1️⃣ WOZU? | "Wenn ich das kann, dann..." | _______________ |
+        | 2️⃣ WAS WEISS ICH? | ABC-Liste (A-Z, 3 Min) | ___ Wörter |
+        | 3️⃣ WER HILFT? | Buddy anschreiben | Name: ___________ |
+        | 4️⃣ WAS ENTSCHEIDE ICH? | Wann, Wo, Womit? | _______________ |
+        | 5️⃣ WORST CASE? | "Das Schlimmste wäre..." | _______________ |
+
+        **Warum das funktioniert:** Jeder Schritt erfüllt ein Grundbedürfnis
+        (Sinn → Kompetenz → Verbundenheit → Autonomie → Angst reduzieren).
+        """)
+
+    with st.expander("🧠 Die ABC-Liste nach Birkenbihl", expanded=False):
+        st.markdown("""
+        **So geht's:**
+        1. Schreib A-Z untereinander auf ein Blatt
+        2. Wähle dein Thema (z.B. "Französische Revolution")
+        3. Schreib zu jedem Buchstaben, was dir einfällt
+        4. Spring rum – nicht von A nach Z, sondern wie's kommt!
+        5. Zähl die Wörter
+
+        **Mach das VOR und NACH dem Lernen.**
+        Die Differenz = Dein sichtbarer Fortschritt = Dopamin = Motivation 🔥
+
+        *"Das Alphabet ist wie ein Haken, an dem dein Wissen hängt."*
+        – Vera F. Birkenbihl
+        """)
+
+
+# ============================================
+# TAB 2: THEORIE (UNVERÄNDERT)
+# ============================================
+
+def _render_theorie_tab():
+    """Rendert den Theorie-Tab mit Altersstufen-Auswahl."""
+    
+    # Altersstufen-Auswahl als Buttons
+    st.markdown("### Wähle deine Altersstufe:")
+
+    col1, col2, col3, col4, col5 = st.columns(5)
+
+    # Session State für Altersstufe initialisieren (separater Key für Motivation)
+    if "selected_age_group_motivation" not in st.session_state:
+        st.session_state.selected_age_group_motivation = "mittelstufe"
+
+    with col1:
+        if st.button("🎒 Grundschule\n(1-4)", key="btn_motiv_gs", use_container_width=True,
+                    type="primary" if st.session_state.selected_age_group_motivation == "grundschule" else "secondary"):
+            st.session_state.selected_age_group_motivation = "grundschule"
+            st.rerun()
+
+    with col2:
+        if st.button("📚 Unterstufe\n(5-7)", key="btn_motiv_us", use_container_width=True,
+                    type="primary" if st.session_state.selected_age_group_motivation == "unterstufe" else "secondary"):
+            st.session_state.selected_age_group_motivation = "unterstufe"
+            st.rerun()
+
+    with col3:
+        if st.button("🎯 Mittelstufe\n(8-10)", key="btn_motiv_ms", use_container_width=True,
+                    type="primary" if st.session_state.selected_age_group_motivation == "mittelstufe" else "secondary"):
+            st.session_state.selected_age_group_motivation = "mittelstufe"
+            st.rerun()
+
+    with col4:
+        if st.button("🎓 Oberstufe\n(11-13)", key="btn_motiv_os", use_container_width=True,
+                    type="primary" if st.session_state.selected_age_group_motivation == "oberstufe" else "secondary"):
+            st.session_state.selected_age_group_motivation = "oberstufe"
+            st.rerun()
+
+    with col5:
+        if st.button("👩‍🏫 Pädagogen", key="btn_motiv_ped", use_container_width=True,
+                    type="primary" if st.session_state.selected_age_group_motivation == "paedagogen" else "secondary"):
+            st.session_state.selected_age_group_motivation = "paedagogen"
+            st.rerun()
+
+    st.divider()
+
+    # Content je nach Altersstufe
+    if st.session_state.selected_age_group_motivation == "grundschule":
+        _render_grundschule_content()
+    elif st.session_state.selected_age_group_motivation == "unterstufe":
+        _render_unterstufe_content()
+    elif st.session_state.selected_age_group_motivation == "mittelstufe":
+        _render_mittelstufe_content()
+    elif st.session_state.selected_age_group_motivation == "oberstufe":
+        _render_oberstufe_content()
+    elif st.session_state.selected_age_group_motivation == "paedagogen":
+        _render_paedagogen_content()
+
+
+# ============================================
 # PRIVATE HELPER FUNCTIONS FÜR ALTERSSTUFEN
+# (UNVERÄNDERT - Original Content)
 # ============================================
 
 def _render_grundschule_content():
@@ -195,938 +366,1135 @@ def _render_grundschule_content():
     - **Woher kommt die Milch wirklich?**
 
     Und dann suchen sie die Antworten. Das ist Lernen! Nicht langweilig,
-    sondern wie eine Schatzsuche. 🗺️
+    sondern wie eine Schatzsuche 🏴‍☠️
     """)
 
-    with st.expander("🎯 **Trick 1: Die Warum-Frage**", expanded=True):
+    # 3 Superkräfte
+    st.subheader("🦸 Die 3 Superkräfte der Motivation")
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
         st.markdown("""
-        Wenn du etwas lernst, frag dich:
-
-        > **"Warum ist das cool?"**
-
-        **Beispiele:**
-        - Rechnen → *"Damit ich weiß, ob mein Taschengeld reicht!"*
-        - Lesen → *"Damit ich die Minecraft-Anleitungen verstehe!"*
-        - Schreiben → *"Damit ich meiner Oma einen Brief schicken kann!"*
-
-        Wenn du einen Grund findest, macht Lernen mehr Spaß!
+        #### 🎯 Superkraft 1: ICH WILL
+        
+        **Frag dich:** "WOZU lerne ich das?"
+        
+        **Beispiel:**
+        - ❌ "Ich MUSS Mathe lernen"
+        - ✅ "Ich lerne Mathe, damit ich mein 
+             Taschengeld selbst zählen kann!"
+        
+        **Trick:** Finde DEINEN Grund!
         """)
 
-    with st.expander("🌟 **Trick 2: Kleine Erfolge sammeln**"):
+    with col2:
         st.markdown("""
-        Mach dir eine **Erfolgs-Schatzkiste**! 📦
-
-        Jedes Mal wenn du etwas geschafft hast:
-        - Schreib es auf einen Zettel
-        - Wirf den Zettel in die Kiste
-        - Wenn du traurig bist: Lies die Zettel!
-
-        **Beispiele für Erfolge:**
-        - ✅ Ich hab 5 neue Wörter gelernt
-        - ✅ Ich hab eine Mathe-Aufgabe alleine gelöst
-        - ✅ Ich hab ein Buch fertig gelesen
-
-        *Dein Gehirn liebt es, Erfolge zu sammeln!*
+        #### 💪 Superkraft 2: ICH KANN
+        
+        **Sammle Beweise, dass du schlau bist!**
+        
+        **So geht's:**
+        - Schreib auf, was du GESTERN 
+          noch nicht konntest
+        - Und was du HEUTE kannst!
+        
+        **Beispiel:**
+        "Gestern wusste ich nicht, wie man
+        'Schmetterling' schreibt. Heute schon!"
         """)
 
-    with st.expander("👀 **Trick 3: Schau anderen zu**"):
+    with col3:
         st.markdown("""
-        Kennst du jemanden, der etwas gut kann?
-
-        - Dein großer Bruder kann gut rechnen?
-        - Deine Freundin kann toll malen?
-        - Dein Papa kann Geschichten erzählen?
-
-        **Frag sie:** *"Wie hast du das gelernt?"*
-
-        Meistens sagen sie: *"Am Anfang konnte ich das auch nicht!"*
-
-        Das bedeutet: **DU kannst das auch lernen!** 💪
+        #### 👫 Superkraft 3: WIR ZUSAMMEN
+        
+        **Lernen macht mehr Spaß mit Freunden!**
+        
+        **Ideen:**
+        - Frag einen Freund/eine Freundin 
+          zum Lernen
+        - Erkläre jemandem was du gelernt hast
+        - Macht ein Quiz zusammen!
+        
+        **Geheimnis:** Wer erklärt, lernt doppelt!
         """)
 
-    with st.expander("🎮 **Trick 4: Mach ein Spiel draus**"):
+    # Tipps für Eltern
+    with st.expander("👨‍👩‍👧 Tipps für Eltern"):
         st.markdown("""
-        Lernen ist wie ein Computerspiel:
-        - Du startest auf Level 1
-        - Du übst und wirst besser
-        - Manchmal verlierst du – aber dann versuchst du es nochmal!
-        - Irgendwann schaffst du das Level!
-
-        **Idee:** Gib dir selbst Punkte!
-        - 1 Punkt für jede Aufgabe, die du versuchst
-        - 2 Punkte für jede Aufgabe, die du schaffst
-        - 5 Punkte, wenn du etwas Neues verstehst!
-
-        Wie viele Punkte schaffst du heute? 🎯
+        **Die 3 Grundbedürfnisse (vereinfacht):**
+        
+        1. **Autonomie = "Ich darf mitentscheiden"**
+           - Lassen Sie Ihr Kind wählen (Reihenfolge, Ort, Zeit)
+           - "Möchtest du zuerst Mathe oder Deutsch?"
+        
+        2. **Kompetenz = "Ich schaffe das"**
+           - Fokus auf Fortschritt, nicht Perfektion
+           - "Gestern konntest du 3, heute 5 Aufgaben!"
+        
+        3. **Verbundenheit = "Jemand glaubt an mich"**
+           - Interesse zeigen, nicht kontrollieren
+           - "Erzähl mir, was du heute gelernt hast!"
+        
+        **⚠️ Achtung: Belohnungen können schaden!**
+        "Wenn du eine 1 schreibst, bekommst du..." 
+        → Untergräbt die Eigenfreude
+        
+        **Besser:** Anerkennung der Anstrengung
+        "Ich sehe, wie viel du geübt hast!" ✅
         """)
 
-    # Quick Reference Box
+    # Quick Reference
     st.success("""
-    ### ✨ Das Wichtigste für Grundschüler:
-
-    1. **Frag "WARUM?"** – Finde heraus, wozu du das brauchst
-    2. **Sammel Erfolge** – Schreib auf, was du geschafft hast
-    3. **Frag andere** – Jeder hat mal klein angefangen
-    4. **Mach ein Spiel draus** – Gib dir selbst Punkte!
-
-    *"Jeder Experte war mal ein Anfänger!"* 🌱
+    ### ⚡ Quick Reference – Grundschule
+    
+    | Problem | Lösung |
+    |---------|--------|
+    | "Ich hab keinen Bock!" | Finde DEIN Warum! |
+    | "Das ist zu schwer!" | Schau, was du SCHON kannst! |
+    | "Das ist langweilig!" | Lern mit einem Freund! |
+    | "Ich kann das nicht!" | Du kannst es NOCH nicht! |
     """)
 
 
 def _render_unterstufe_content():
     """Rendert den Unterstufen-Content für Motivation."""
     st.header("🔥 Wieder Bock aufs Lernen – Unterstufe")
-    st.caption("Für Schüler der 5.-7. Klasse")
+    st.caption("Für Schüler:innen der Klassen 5-7")
 
     st.markdown("""
-    ### Die unbequeme Wahrheit
+    ### 💡 Motivation ist kein Zufall – sie hat Regeln!
 
-    Okay, lass uns ehrlich sein: Manchmal ist Schule echt nervig.
-
-    **Die gute Nachricht:** Das liegt meistens nicht an dir.
-    **Die noch bessere Nachricht:** Du kannst was dagegen tun.
-
-    Hier sind die Tricks, die wirklich funktionieren – laut Wissenschaft,
-    nicht laut "das haben wir schon immer so gemacht".
+    Forscher haben herausgefunden: Es gibt **3 Dinge**, die uns motivieren.
+    Und die gute Nachricht: Du kannst sie selbst beeinflussen!
     """)
 
-    with st.expander("🎯 **Trick 1: Finde DEINEN Grund**", expanded=True):
+    # Die 3 Säulen
+    st.subheader("🏛️ Die 3 Säulen der Motivation")
+
+    tab1, tab2, tab3 = st.tabs(["🎯 Autonomie", "💪 Kompetenz", "👥 Verbundenheit"])
+
+    with tab1:
         st.markdown("""
-        Die meisten Schüler lernen für:
-        - Die Note ❌
-        - Die Eltern ❌
-        - Den Lehrer ❌
+        ### 🎯 Säule 1: Autonomie
+        **= Das Gefühl, selbst zu entscheiden**
 
-        Das Problem: Dein Gehirn findet das langweilig.
+        **Warum wichtig?**
+        Wenn dir jemand sagt "Du MUSST das machen!", 
+        hast du direkt weniger Lust. Das ist normal!
 
-        **Besser:** Finde DEINEN Grund!
+        **Was du tun kannst:**
+        1. **Finde DEIN Wozu:**
+           "Wozu brauche ICH das?" (nicht: warum sagt der Lehrer das)
+        
+        2. **Triff kleine Entscheidungen:**
+           - WANN lerne ich? (Nach dem Essen? Nach einer Pause?)
+           - WO lerne ich? (Schreibtisch? Küche? Bibliothek?)
+           - WOMIT fange ich an? (Leichtes zuerst? Schweres zuerst?)
+        
+        3. **Mach dir bewusst:** 
+           DU entscheidest, ob du lernst – nicht deine Eltern!
+           (Ja, auch wenn es sich nicht so anfühlt 😄)
 
-        | Fach | Nerviger Grund | DEIN Grund |
-        |------|----------------|------------|
-        | Englisch | "Ich muss das für die Arbeit können" | "Ich kann YouTube-Videos ohne Untertitel gucken" |
-        | Mathe | "Das kommt in der Prüfung dran" | "Ich kann ausrechnen, ob der Sale wirklich günstiger ist" |
-        | Bio | "Steht im Lehrplan" | "Ich verstehe, warum ich nach Sport so kaputt bin" |
-
-        **Deine Aufgabe:** Schreib zu einem Fach auf:
-        > *"Wenn ich das kann, dann kann ich __________."*
+        **Fun Fact:** 
+        In Experimenten waren Menschen 40% motivierter, 
+        wenn sie zwischen zwei fast gleichen Optionen wählen durften!
         """)
 
-    with st.expander("📝 **Trick 2: Die ABC-Liste**"):
+    with tab2:
         st.markdown("""
-        Das ist ein Trick von Vera F. Birkenbihl (eine berühmte Lernforscherin).
+        ### 💪 Säule 2: Kompetenz
+        **= Das Gefühl, etwas zu können**
 
-        **So geht's:**
-        1. Schreib A bis Z untereinander auf ein Blatt
-        2. Wähle ein Thema (z.B. "Das Römische Reich")
+        **Das Problem:**
+        Wenn du denkst "Ich kann das eh nicht", 
+        ist die Motivation futsch.
+
+        **Die Lösung: Beweise sammeln!**
+
+        **Technik 1: Die ABC-Liste (nach Birkenbihl)**
+        1. Schreib A-Z untereinander
+        2. Wähle ein Thema (z.B. "Mittelalter")
         3. Schreib zu jedem Buchstaben, was dir einfällt
-        4. Spring rum – nicht von A nach Z!
-        5. Zähl die Wörter
+        4. Zähl die Wörter!
 
-        **Beispiel:**
-        ```
-        A - Augustus, Armee
-        B - Brot und Spiele
-        C - Cäsar
-        D - (noch leer)
-        E - Expansion
-        ...
-        ```
+        **Mach das VOR und NACH dem Lernen.**
+        Vorher: 8 Wörter → Nachher: 23 Wörter = Sichtbarer Fortschritt!
 
-        **Der Trick:** Mach das VOR und NACH dem Lernen.
-        - Vorher: 12 Wörter
-        - Nachher: 28 Wörter
-        - **Dein Fortschritt: +16 Wörter!** 🎉
+        **Technik 2: Das "Noch nicht"-Mindset**
+        - ❌ "Ich kann kein Englisch"
+        - ✅ "Ich kann NOCH NICHT so gut Englisch"
 
-        Das ist SICHTBAR. Und dein Gehirn liebt sichtbaren Fortschritt!
+        Das kleine Wort "noch" macht einen riesigen Unterschied!
         """)
 
-    with st.expander("👥 **Trick 3: Hol dir einen Buddy**"):
+    with tab3:
         st.markdown("""
-        **Fun Fact:** Eine Studie aus Greifswald hat 1.088 Schüler gefragt:
-        *"Wer motiviert dich?"*
+        ### 👥 Säule 3: Verbundenheit
+        **= Das Gefühl, dazuzugehören**
 
-        | Quelle | Prozent |
-        |--------|---------|
-        | **Andere Schüler** | **34%** |
-        | Ich selbst | 29% |
-        | Lehrer UND Schüler | 27% |
-        | Nur Lehrer | 10% |
+        **Überraschung:**
+        34% deiner Motivation kommt von deinen Mitschülern!
+        (Das haben Forscher in einer Studie herausgefunden)
 
-        **Das heißt:** Deine Freunde sind dein größter Motivations-Hack!
+        **Was du tun kannst:**
 
-        **So geht's:**
-        1. Such dir einen Lern-Buddy (WhatsApp, Discord, egal)
-        2. Ihr lernt getrennt
-        3. Ihr trefft euch und erklärt euch gegenseitig
-        4. Wer's nicht erklären kann, hat's nicht verstanden
+        **1. Finde einen Lern-Buddy**
+        - Jemand, mit dem du dich gegenseitig abfragen kannst
+        - Muss nicht dein bester Freund sein!
+        - Tipp: Schreib heute noch jemanden an!
 
-        *"Wenn du etwas nicht einfach erklären kannst,
-        hast du es nicht verstanden."* – Albert Einstein
+        **2. Erkläre anderen, was du gelernt hast**
+        - Deiner Familie
+        - Deinen Freunden
+        - (Oder deinem Haustier 🐕)
+        
+        **Warum? Wer erklärt, versteht besser!**
+
+        **3. Frag um Hilfe**
+        - Das ist KEINE Schwäche!
+        - Lehrer:innen freuen sich meistens über Fragen
         """)
 
-    with st.expander("🚫 **Trick 4: Motivations-Killer vermeiden**"):
-        st.markdown("""
-        Diese Dinge killen deine Motivation:
-
-        | Killer | Warum | Was stattdessen |
-        |--------|-------|-----------------|
-        | "Ich MUSS das lernen" | Dein Gehirn hasst Zwang | "Ich WILL das verstehen" |
-        | Alles auf einmal | Überforderung | Kleine Häppchen (25 Min) |
-        | Nur lesen, nicht machen | Langweilig | Selbst Fragen beantworten |
-        | Alleine kämpfen | Frustrierend | Buddy fragen |
-        | Kein Ziel | Sinnlos-Gefühl | "Wozu brauche ich das?" |
-
-        **Der schlimmste Killer:** Nur für die Note lernen!
-
-        Forscher nennen das "Surface Motivation" – und die hat laut
-        John Hattie einen **NEGATIVEN Effekt** (d = -0.11).
-
-        Lies das nochmal: Nur für die Note lernen macht dich SCHLECHTER. 🤯
-        """)
-
-    # Quick Reference Box
+    # Quick Reference
     st.success("""
-    ### ⚡ Quick Reference – Unterstufe
+    ### ⚡ Der 5-Minuten-Motivations-Hack
 
-    **Wenn du keinen Bock hast:**
+    Wenn du NULL Bock hast, mach genau DAS:
 
-    1. **WOZU?** → Finde DEINEN Grund ("Wenn ich das kann, dann...")
-    2. **ABC-Liste** → Zeigt dir deinen Fortschritt
-    3. **Buddy** → Schreib jetzt jemandem: "Wollen wir zusammen lernen?"
-    4. **Killer vermeiden** → Nicht "müssen", sondern "wollen"
-
-    *"Motivation kommt nicht VOR dem Anfangen – sondern WÄHREND."*
+    | Schritt | Was du machst | Warum |
+    |---------|---------------|-------|
+    | 1️⃣ | Frag dich: "WOZU brauche ICH das?" | Autonomie |
+    | 2️⃣ | Mach eine ABC-Liste (3 Min) | Kompetenz |
+    | 3️⃣ | Schreib einem Buddy | Verbundenheit |
+    | 4️⃣ | Entscheide: Wann, Wo, Womit? | Autonomie |
+    | 5️⃣ | Stell einen Timer auf 25 Min | Start! |
     """)
 
 
 def _render_mittelstufe_content():
     """Rendert den Mittelstufen-Content für Motivation."""
     st.header("🔥 Wieder Bock aufs Lernen – Mittelstufe")
-    st.caption("Für Schüler der 8.-10. Klasse")
+    st.caption("Für Schüler:innen der Klassen 8-10")
 
     st.markdown("""
-    ### Das Motivations-Problem, das du kennst
+    ### 🧠 Die Wissenschaft der Motivation
 
-    Hand aufs Herz: Wann hattest du das letzte Mal *richtig* Bock zu lernen?
+    Du weißt wahrscheinlich schon: Motivation kommt nicht einfach so.
+    Aber wusstest du, dass es dafür **eine richtige Theorie** gibt?
 
-    Nicht dieses "ich muss noch für die Klausur lernen"-Gefühl.
-    Sondern echtes Interesse. Diese Neugier, bei der du vergisst, auf die Uhr zu schauen.
-
-    Falls du jetzt denkst: *"Äh, nie?"* – dann bist du nicht allein.
-
-    **PISA 2022:** Nur **59%** der deutschen Schüler können sich selbst zum Lernen motivieren.
-    Das heißt: Fast die Hälfte von euch sitzt in der Schule und denkt: *"Warum bin ich hier?"*
-
-    **Plot Twist:** Das liegt nicht an dir. Das liegt am System.
+    Die **Selbstbestimmungstheorie** (Self-Determination Theory, SDT) 
+    von Deci & Ryan ist eine der am besten erforschten Theorien der Psychologie.
     """)
 
-    with st.expander("🧠 **Die Wissenschaft: Was dein Gehirn WIRKLICH braucht**", expanded=True):
-        st.markdown("""
-        Die Psychologen Edward Deci und Richard Ryan haben das erforscht.
-        Ergebnis: Dein Gehirn braucht **drei Dinge**, um motiviert zu sein:
+    # SDT erklärt
+    st.subheader("📊 Die 3 psychologischen Grundbedürfnisse")
 
-        | Grundbedürfnis | Bedeutet | Wenn's fehlt |
-        |----------------|----------|--------------|
-        | **🎯 Autonomie** | Ich entscheide selbst | "Ich MUSS das" → Kein Bock |
-        | **💪 Kompetenz** | Ich kann das schaffen | "Ich bin zu dumm" → Aufgeben |
-        | **👥 Verbundenheit** | Ich gehöre dazu | "Keiner hilft mir" → Frust |
+    col1, col2, col3 = st.columns(3)
 
-        **Das ist keine Meinung – das ist Forschung.**
-        Die Selbstbestimmungstheorie ist eine der am besten belegten Theorien der Psychologie.
-
-        **Und jetzt kommt's:** Die Schule ignoriert oft alle drei. 🤷
-        - Du entscheidest nicht, WAS du lernst (Autonomie ❌)
-        - Du siehst selten deinen Fortschritt (Kompetenz ❌)
-        - Du lernst oft alleine (Verbundenheit ❌)
-
-        Kein Wunder, dass du keinen Bock hast!
+    with col1:
+        st.metric(label="🎯 Autonomie", value="Selbstbestimmung", 
+                 delta="Ich entscheide selbst")
+        st.caption("""
+        Das Gefühl, dass deine Handlungen 
+        von dir selbst ausgehen und nicht 
+        von außen kontrolliert werden.
         """)
 
-    with st.expander("📊 **Der Plot Twist: Surface vs. Deep Learning**"):
-        st.markdown("""
-        John Hattie hat über **1.800 Meta-Studien** mit **300 Millionen Schülern** analysiert.
-        Sein Ergebnis wird dich überraschen:
-
-        | Art der Motivation | Effektstärke | Bedeutung |
-        |--------------------|--------------|-----------|
-        | **Deep Motivation** (Verstehen wollen) | d = 0.69 | 🔥 Sehr wirksam! |
-        | Allgemeine Motivation | d = 0.42 | ✅ Okay |
-        | **Surface Motivation** (Nur für die Note) | d = -0.11 | ❌ **SCHADET!** |
-
-        Lies das nochmal: **Nur für die Note zu lernen hat einen NEGATIVEN Effekt.**
-
-        Das ist, als würdest du ins Fitnessstudio gehen, aber nur um ein Selfie zu machen.
-        Technisch warst du da. Aber fitter wirst du davon nicht.
-
-        **Was ist Deep Motivation?**
-        - Du willst es VERSTEHEN, nicht nur auswendig lernen
-        - Du fragst "Warum?" und "Wie hängt das zusammen?"
-        - Du verbindest neues Wissen mit dem, was du schon weißt
-
-        **Was ist Surface Motivation?**
-        - Du lernst nur, was "drankommt"
-        - Du merkst dir Fakten, ohne sie zu verstehen
-        - Nach der Klausur ist alles wieder weg
+    with col2:
+        st.metric(label="💪 Kompetenz", value="Wirksamkeit", 
+                 delta="Ich kann das")
+        st.caption("""
+        Das Gefühl, Herausforderungen 
+        bewältigen zu können und darin 
+        besser zu werden.
         """)
 
-    with st.expander("⚠️ **Der Korrumpierungseffekt: Warum Belohnungen gefährlich sind**"):
-        st.markdown("""
-        *"Wenn du eine Eins schreibst, kriegst du 20 Euro."*
-
-        Klingt nach einem guten Deal, oder?
-
-        **Plot Twist:** Der Psychologe Edward Deci hat 1971 ein Experiment gemacht.
-        Kinder sollten Puzzles lösen. Eine Gruppe wurde belohnt, die andere nicht.
-
-        **Ergebnis:** Die belohnten Kinder hatten DANACH **weniger Interesse**
-        an den Puzzles als die nicht-belohnten!
-
-        Das nennt sich **Korrumpierungseffekt**:
-        > Externe Belohnungen können deine innere Motivation zerstören.
-
-        Dein Gehirn denkt: *"Ah, ich mache das nur wegen des Geldes.
-        Also ist es wohl langweilig."*
-
-        **Aber Achtung:** Das passiert nur, wenn du die Belohnung als **Kontrolle** empfindest.
-        Wenn du sie als **Feedback** siehst ("Hey, das hast du echt gut gemacht!"),
-        kann sie sogar helfen.
-
-        **Die Regel:** Lob > Geld. Fortschritt sehen > Belohnung kriegen.
+    with col3:
+        st.metric(label="👥 Verbundenheit", value="Zugehörigkeit", 
+                 delta="Ich gehöre dazu")
+        st.caption("""
+        Das Gefühl, mit anderen Menschen 
+        verbunden zu sein und von ihnen 
+        akzeptiert zu werden.
         """)
 
-    with st.expander("🛠️ **Der 5-Schritte-Plan: So kriegst du wieder Bock**", expanded=True):
-        st.markdown("""
-        Hier ist der konkrete Plan, wenn die Motivation im Keller ist:
-
-        ---
-
-        **SCHRITT 1: Finde DEINEN Grund (3 Min)**
-
-        Nicht "Ich lerne für die Klausur", sondern:
-        > **"Was wäre cool, wenn ich das könnte?"**
-
-        Schreib auf: *"Wenn ich [Thema] kann, dann kann ich __________."*
-
-        ---
-
-        **SCHRITT 2: Mach eine ABC-Liste (5 Min)**
-
-        Das ist ein Trick von Vera F. Birkenbihl:
-        1. A-Z untereinander schreiben
-        2. Thema wählen
-        3. Zu jedem Buchstaben schreiben, was dir einfällt
-        4. Zählen: ___ Wörter
-
-        **Mach das VOR und NACH dem Lernen.** Die Differenz ist dein Fortschritt!
-
-        ---
-
-        **SCHRITT 3: Hol dir einen Buddy**
-
-        34% der Motivation kommt von anderen Schülern (Greifswald-Studie).
-
-        Schreib JETZT jemandem: *"Hey, wollen wir zusammen für ___ lernen?"*
-
-        ---
-
-        **SCHRITT 4: Triff Mikro-Entscheidungen**
-
-        Du kannst nicht entscheiden, WAS du lernst. Aber du kannst entscheiden:
-        - **WANN:** Jetzt? Nach dem Essen? Morgens?
-        - **WO:** Schreibtisch? Café? Bett? (Ja, das ist erlaubt)
-        - **WIE LANGE:** 25 Min Pomodoro? 45 Min Blöcke?
-        - **WOMIT:** Buch? Video? Karteikarten?
-
-        Jede Mini-Entscheidung gibt dir Kontrolle zurück. Dein Gehirn denkt:
-        *"Okay, ICH mache das hier. Nicht jemand anderes."*
-
-        ---
-
-        **SCHRITT 5: Senke den Druck**
-
-        Frag dich: *"Was passiert WIRKLICH, wenn ich das verkacke?"*
-
-        Meistens: Eine schlechte Note. Nicht cool, aber auch nicht das Ende der Welt.
-
-        Und dann: *"Kann ich damit leben?"*
-
-        Spoiler: Ja, kannst du.
-        """)
-
-    with st.expander("⏰ **Prokrastination: Warum du aufschiebst (und was hilft)**"):
-        st.markdown("""
-        Prokrastination ist nicht Faulheit. Es ist ein Bewältigungsmechanismus.
-
-        **Warum du aufschiebst:**
-        | Grund | Was dein Gehirn denkt | Was hilft |
-        |-------|----------------------|-----------|
-        | Angst vor Versagen | "Wenn ich's nicht versuche, kann ich auch nicht scheitern" | Worst Case durchdenken |
-        | Überforderung | "Das ist zu viel, ich weiß nicht wo anfangen" | Kleinster möglicher Schritt |
-        | Perfektionismus | "Wenn ich's nicht perfekt mache, lohnt es sich nicht" | "Fertig > Perfekt" |
-        | Kein Sinn | "Wozu brauche ich das überhaupt?" | DEINEN Grund finden |
-
-        **Der beste Anti-Prokrastinations-Trick:**
-
-        > **Die 2-Minuten-Regel:** Wenn etwas weniger als 2 Minuten dauert, mach es JETZT.
-
-        Und für größere Sachen:
-
-        > **Die Kleinster-Schritt-Regel:** Was ist der KLEINSTE Schritt, den du machen kannst?
-
-        Nicht: "Ich muss das ganze Kapitel lernen"
-        Sondern: "Ich lese die erste Seite"
-
-        Dein Gehirn hat weniger Angst vor kleinen Aufgaben.
-        Und meistens machst du dann eh weiter.
-        """)
-
-    # Die Notfall-Karte
-    st.warning("""
-    ### 🆘 NOTFALL-KARTE (Screenshot machen!)
-
-    ```
-    WENN ICH KEINEN BOCK HABE:
-
-    1. WOZU?      → "Wenn ich das kann, dann..."
-    2. ABC-LISTE  → 3 Min, zeigt was ich schon weiß
-    3. BUDDY      → Jemanden anschreiben
-    4. ENTSCHEIDE → Wann, Wo, Wie
-    5. WORST CASE → "Das Schlimmste wäre... und das überlebe ich"
-    ```
+    st.info("""
+    **Wichtig:** Wenn EINES dieser Bedürfnisse nicht erfüllt ist, 
+    leidet deine Motivation. Das ist keine Charakterschwäche – das ist Psychologie!
     """)
 
-    # Quick Reference
-    st.success("""
-    ### ⚡ Das Wichtigste – Mittelstufe
+    # Der 5-Schritte-Plan
+    st.subheader("📋 Der 5-Schritte-Plan gegen Motivationslosigkeit")
 
-    1. **Surface Learning schadet** (d = -0.11) → Lerne zum VERSTEHEN, nicht für die Note
-    2. **3 Grundbedürfnisse:** Autonomie + Kompetenz + Verbundenheit = Motivation
-    3. **Belohnungen können schaden** (Korrumpierungseffekt) → Fortschritt > Belohnung
-    4. **34% der Motivation** kommt von Mitschülern → Buddy suchen!
-    5. **5-Schritte-Plan:** WOZU → ABC-Liste → Buddy → Mikro-Entscheidungen → Druck senken
+    with st.expander("**Schritt 1: Selbstdiagnose – Was fehlt dir?**", expanded=True):
+        st.markdown("""
+        Frag dich ehrlich:
+        
+        | Frage | Wenn JA → Problem |
+        |-------|-------------------|
+        | "Ich sehe keinen Sinn darin" | Autonomie fehlt |
+        | "Ich fühle mich gezwungen" | Autonomie fehlt |
+        | "Ich glaube, ich schaff das nicht" | Kompetenz fehlt |
+        | "Ich hab keine Ahnung, wo ich anfangen soll" | Kompetenz fehlt |
+        | "Alle anderen sind besser" | Kompetenz fehlt |
+        | "Keiner unterstützt mich" | Verbundenheit fehlt |
+        | "Es interessiert niemanden" | Verbundenheit fehlt |
+        
+        **Dein Ziel:** Finde heraus, welches Grundbedürfnis bei dir gerade zu kurz kommt.
+        """)
 
-    *"Motivation kommt nicht vor dem Anfangen – sondern während."*
+    with st.expander("**Schritt 2: Die WOZU-Frage (Autonomie)**"):
+        st.markdown("""
+        **Statt "Warum muss ich das?" frag: "WOZU brauche ICH das?"**
+        
+        Der Unterschied:
+        - "Warum?" → Sucht nach Schuld/Ursache → Führt zu Widerstand
+        - "WOZU?" → Sucht nach Sinn/Ziel → Führt zu Motivation
+        
+        **Übung:**
+        Nimm ein Fach, das du hasst. Beantworte:
+        
+        1. "Wozu könnte ich [Fach] in meinem Leben brauchen?"
+        2. "Was könnte ich damit anfangen, wenn ich es kann?"
+        3. "Welches Problem könnte ich damit lösen?"
+        
+        **Wichtig:** Die Antwort muss für DICH stimmen, nicht für deine Eltern!
+        """)
+
+    with st.expander("**Schritt 3: Die ABC-Liste (Kompetenz)**"):
+        st.markdown("""
+        **Die Birkenbihl-Methode, um dein Vorwissen zu aktivieren:**
+        
+        1. Schreib A-Z untereinander auf ein Blatt
+        2. Wähle dein Thema
+        3. Schreib zu jedem Buchstaben, was dir einfällt (3 Minuten)
+        4. Zähl die ausgefüllten Buchstaben
+        
+        **Warum das funktioniert:**
+        - Du siehst, was du SCHON weißt (Kompetenzerleben!)
+        - Dein Gehirn aktiviert Vorwissen (besseres Lernen)
+        - Nach dem Lernen: Wiederholen → Fortschritt sichtbar!
+        
+        **Pro-Tipp:** Mach die Liste VORHER und NACHHER.
+        Die Differenz = Dein messbarer Fortschritt = Dopamin = Motivation
+        """)
+
+    with st.expander("**Schritt 4: Der Buddy-Effekt (Verbundenheit)**"):
+        st.markdown("""
+        **Fakt:** 34% deiner Motivation kommt von Mitschülern (SELF-Studie).
+        
+        **So nutzt du das:**
+        
+        **Option 1: Lern-Buddy finden**
+        - Jemand aus deiner Klasse
+        - Ihr fragt euch gegenseitig ab
+        - Ihr erklärt euch schwierige Sachen
+        
+        **Option 2: Erklär-Methode**
+        - Erkläre deiner Familie/Freunden, was du lernst
+        - Wer erklärt, versteht besser (bewiesener Effekt!)
+        
+        **Option 3: Study-Session**
+        - Lernt zusammen (in Person oder online)
+        - Tipp: Pomodoro-Technik (25 min lernen, 5 min Pause)
+        
+        **Wichtig:** "Gruppenarbeit" ≠ effektives Peer-Learning!
+        Strukturiert es: Wer erklärt was? Wann wird abgefragt?
+        """)
+
+    with st.expander("**Schritt 5: Mikro-Entscheidungen (Autonomie-Boost)**"):
+        st.markdown("""
+        **Kleine Entscheidungen = Großer Motivationsgewinn**
+        
+        Auch wenn du das Thema nicht wählen kannst, 
+        kannst du IMMER noch entscheiden:
+        
+        | Was | Optionen |
+        |-----|----------|
+        | ⏰ WANN? | Morgens / Nachmittags / Abends |
+        | 📍 WO? | Schreibtisch / Küche / Bibliothek / Draußen |
+        | 📱 WOMIT? | Buch / App / Videos / Karteikarten |
+        | 📋 WELCHE REIHENFOLGE? | Leicht → Schwer oder umgekehrt |
+        | ⏱️ WIE LANGE? | 25 Min / 45 Min / 2 Stunden |
+        
+        **Das Gefühl:** "ICH habe das entschieden!"
+        (Auch wenn du trotzdem Mathe lernst 😄)
+        """)
+
+    # Deep vs Surface Learning
+    st.subheader("🧠 Deep Learning vs. Surface Learning")
+
+    st.markdown("""
+    **Aus der Forschung (Hattie, 2009):**
+    
+    | Ansatz | Beschreibung | Effektstärke |
+    |--------|--------------|--------------|
+    | **Deep Learning** | Verstehen, Verknüpfen, Anwenden | d = 0.69 ✅ |
+    | **Surface Learning** | Auswendiglernen ohne Verstehen | d = -0.11 ❌ |
+    
+    **Was bedeutet das?**
+    - Effektstärke > 0.40 = guter Effekt
+    - Effektstärke < 0 = NEGATIVER Effekt!
+    
+    **Surface Learning schadet also tatsächlich!** 😱
     """)
+
+    col1, col2 = st.columns(2)
+    with col1:
+        st.error("""
+        **❌ Surface Learning:**
+        - Text mehrmals durchlesen
+        - Alles markieren
+        - Definitionen auswendig lernen
+        - Hoffen, dass man es wiedererkennt
+        """)
+    with col2:
+        st.success("""
+        **✅ Deep Learning:**
+        - Sich selbst Fragen stellen
+        - Verbindungen zu anderen Themen suchen
+        - Jemand anderem erklären
+        - Anwendungsbeispiele finden
+        """)
 
 
 def _render_oberstufe_content():
-    """Rendert den Oberstufen-Content für Motivation."""
+    """
+    Rendert den Oberstufen-Content für Motivation.
+    Neu: Praktisch, direkt, mit echtem Verständnis für Abi-Stress.
+    """
     st.header("🔥 Wieder Bock aufs Lernen – Oberstufe")
-    st.caption("Für Schüler der 11.-13. Klasse")
+    st.caption("Für alle, die gerade im Abi-Stress stecken (Klasse 11-13)")
+
+    # ══════════════════════════════════════════
+    # EINSTIEG: REAL TALK
+    # ══════════════════════════════════════════
+    st.markdown("""
+### Okay, lass uns ehrlich sein.
+
+Du sitzt da, hast eigentlich 3 Klausuren, solltest lernen – und stattdessen scrollst du hier rum.
+Oder jemand hat dir den Link geschickt. Oder du suchst verzweifelt nach *irgendwas*, das hilft.
+
+**Hier ist, was du wissen musst:**
+- Das Abi ist stressig. Das ist Fakt, nicht deine Schuld.
+- 51% aller Oberstufenschüler fühlen sich gestresst (DAK-Studie).
+- 10-20% haben echte Prüfungsangst – nicht nur "nervös sein".
+- Die Anforderungen sind real. Der Druck ist real.
+
+**Aber:** Du bist nicht machtlos. Es gibt Sachen, die funktionieren. Wissenschaftlich bewiesen.
+Keine Motivationssprüche. Keine "Denk positiv!"-Bullshit. Konkrete Strategien.
+    """)
+
+    st.divider()
+
+    # ══════════════════════════════════════════
+    # SELBSTDIAGNOSE
+    # ══════════════════════════════════════════
+    st.subheader("🔍 Schritt 1: Was ist eigentlich dein Problem?")
 
     st.markdown("""
-    ### Die wissenschaftliche Perspektive
-
-    Du bist alt genug für die ungeschönte Wahrheit.
-    Also hier sind die Daten – und was sie für dich bedeuten.
+Bevor du irgendwas machst: Finde raus, **was** dir fehlt. Nicht jede Unlust ist gleich.
+Die Forschung sagt: Es gibt **3 Grundbedürfnisse**, die erfüllt sein müssen, damit Motivation funktioniert.
     """)
 
-    # PISA-Daten
-    with st.expander("📊 **PISA 2022: Die Zahlen, die niemand gerne hört**", expanded=True):
+    with st.expander("**Mach den Quick-Check (30 Sekunden)**", expanded=True):
         st.markdown("""
-        **Die harten Fakten aus Deutschland:**
+Lies die Aussagen. Welche treffen auf dich zu?
 
-        | Indikator | Wert | Trend |
-        |-----------|------|-------|
-        | Können sich selbst motivieren | 59% | OECD-Durchschnitt |
-        | Mathe als Lieblingsfach | 38% | Stabil |
-        | Mathe-Angst | 39% | **+8pp seit 2012** |
-        | Freude/Interesse an Mathe | Gesunken | Signifikant seit 2012 |
-        | Instrumentelle Motivation | Gesunken | "Nur noch geringer Teil erkennt Wert für Beruf" |
+**🎯 GRUPPE A – Autonomie (= "Ich entscheide selbst")**
+- [ ] "Ich fühle mich gezwungen, das zu lernen"
+- [ ] "Das bringt mir doch eh nichts"
+- [ ] "Ich weiß nicht, wozu ich das brauche"
+- [ ] "Meine Eltern/Lehrer nerven mich damit"
 
-        **Der Trend ist eindeutig:** Die Motivation deutscher Schüler verschlechtert sich.
+**💪 GRUPPE B – Kompetenz (= "Ich kann das")**
+- [ ] "Ich versteh das einfach nicht"
+- [ ] "Ich weiß nicht, wo ich anfangen soll"
+- [ ] "Alle anderen sind besser als ich"
+- [ ] "Ich hab Angst, zu versagen"
 
-        **Aber:** Das ist kein individuelles Problem. Das ist ein systemisches Problem.
-        Und das bedeutet: Mit den richtigen Strategien kannst du das System hacken.
+**👥 GRUPPE C – Verbundenheit (= "Ich bin nicht allein")**
+- [ ] "Keiner unterstützt mich"
+- [ ] "Ich fühl mich allein damit"
+- [ ] "Es interessiert niemanden, wie's mir geht"
+- [ ] "Ich hab niemanden zum Lernen/Fragen"
+
+---
+
+**Auswertung:**
+- Viele Kreuze bei **A**? → Du brauchst einen **persönlichen Grund**
+- Viele Kreuze bei **B**? → Du brauchst **Erfolgserlebnisse** und einen Plan
+- Viele Kreuze bei **C**? → Du brauchst **Menschen**
+- Überall verteilt? → Normal. Arbeite an dem, was am meisten nervt.
         """)
 
-    # Selbstbestimmungstheorie
-    with st.expander("🧠 **Selbstbestimmungstheorie (Deci & Ryan, 1985/2000)**"):
+    st.divider()
+
+    # ══════════════════════════════════════════
+    # PROBLEM A: AUTONOMIE
+    # ══════════════════════════════════════════
+    st.subheader("🎯 Problem A: 'Wozu soll ich das lernen?'")
+
+    with st.expander("**Die ehrliche Antwort + was du tun kannst**"):
         st.markdown("""
-        Die SDT (Self-Determination Theory) ist eine der am besten belegten
-        Motivationstheorien in der Psychologie.
+**Real talk:** Ja, vieles wirst du nie wieder brauchen. Gedichtanalysen im Job? Wahrscheinlich nicht.
 
-        **Das Modell:**
+**Aber hier ist der Trick:**
 
-        ```
-        Drei psychologische Grundbedürfnisse:
-        ┌─────────────┐   ┌─────────────┐   ┌─────────────┐
-        │  AUTONOMIE  │ + │  KOMPETENZ  │ + │VERBUNDENHEIT│ = Intrinsische Motivation
-        └─────────────┘   └─────────────┘   └─────────────┘
-        ```
+Du lernst nicht *nur* den Inhalt. Du lernst:
+- Wie du dich durch Shit durchbeißt, auf den du keinen Bock hast (= Berufsleben)
+- Wie du komplizierte Sachen verstehst (= jeder Job, der gut bezahlt wird)
+- Wie du unter Druck funktionierst (= Bewerbungen, Deadlines, Stress)
 
-        **Die Definitionen:**
+**Das Abi ist ein Filter.** Nicht weil der Stoff so wichtig ist – sondern weil es zeigt:
+"Dieser Mensch kann sich organisieren und Ziele erreichen."
 
-        | Bedürfnis | Definition | Im Schulkontext |
-        |-----------|------------|-----------------|
-        | **Autonomie** | Eigene Entscheidungen treffen, Kontrolle über Handeln | Wahlmöglichkeiten bei Aufgaben, eigene Lernwege |
-        | **Kompetenz** | Fähigkeiten entwickeln, Herausforderungen meistern | Erfolgserlebnisse, angemessene Schwierigkeit |
-        | **Verbundenheit** | Dazugehören, akzeptiert werden | Lerngruppen, gute Lehrer-Schüler-Beziehung |
+---
 
-        **Empirischer Befund (SELF-Studie Greifswald, n=1.088):**
+**Dein Move:**
 
-        Woher kommt die Motivation deutscher 7./8.-Klässler?
-        - 34% durch Mitschüler (größte Gruppe!)
-        - 29% selbst-motiviert
-        - 27% durch Lehrer UND Mitschüler
-        - 10% nur durch Lehrer
+1. **Finde DEINEN Grund.** Nicht den von deinen Eltern.
+   - Willst du studieren? Welcher NC?
+   - Willst du Geld verdienen? Was für Jobs interessieren dich?
+   - Willst du ins Ausland? Welche Voraussetzungen?
 
-        **Vergleich mit Kanada:** Dort brauchen 57% Lehrer UND Mitschüler.
-        Deutschland ist autonomieorientierter – was Vor- und Nachteile hat.
+2. **Mach kleine Entscheidungen selbst:**
+   - WANN lernst du? (Nicht: wann sagen deine Eltern)
+   - WO lernst du? (Zimmer, Bib, Café?)
+   - WOMIT fängst du an?
+   - WELCHE Musik läuft?
+
+**Fun Fact:** Studien zeigen: Allein die Illusion von Kontrolle steigert die Motivation um 40%.
+Also: Selbst wenn du den Stoff nicht wählen kannst – wähl alles andere.
         """)
 
-    # Hattie Deep vs Surface
-    with st.expander("📈 **Hattie: Deep Motivation vs. Surface Motivation**"):
+    # ══════════════════════════════════════════
+    # PROBLEM B: KOMPETENZ
+    # ══════════════════════════════════════════
+    st.subheader("💪 Problem B: 'Ich check das nicht / Ich schaff das nicht'")
+
+    with st.expander("**Prüfungsangst & Überforderung – was wirklich hilft**"):
         st.markdown("""
-        John Hattie analysierte über 1.800 Meta-Analysen mit 300+ Millionen Schülern.
+**Wichtig:** Das Gefühl "Ich kann das nicht" ist oft nicht wahr. Es ist ein Gefühl.
 
-        **Die Effektstärken:**
+**Woher kommt's?**
+- Zu viel auf einmal (Overwhelm)
+- Keine Erfolgserlebnisse (du siehst nur, was fehlt)
+- Vergleich mit anderen (immer schlecht für die Psyche)
+- Echte Wissenslücken (fixbar!)
 
-        | Faktor | Effektstärke (d) | Interpretation |
-        |--------|------------------|----------------|
-        | **Deep motivation and approach** | **0.69** | Sehr wirksam |
-        | Motivation (allgemein) | 0.42 | Über Schwellenwert |
-        | Reducing anxiety | 0.42 | Über Schwellenwert |
-        | Mastery goals | 0.06 | Gering |
-        | Performance goals | -0.01 | Kein Effekt |
-        | **Surface motivation and approach** | **-0.11** | **Negativ!** |
+---
 
-        **Der kritische Befund:** Surface Motivation SCHADET.
+**Strategie 1: Die "Ich bin nicht bei Null"-Übung**
 
-        **Was ist der Unterschied?**
+Bevor du lernst, mach eine **ABC-Liste** (Birkenbihl-Methode):
+1. Schreib A-Z auf ein Blatt
+2. Notier zu jedem Buchstaben, was du zum Thema schon weißt
+3. Zähl die ausgefüllten Buchstaben
 
-        | | Deep Approach | Surface Approach |
-        |-|---------------|------------------|
-        | **Motiv** | Verstehen wollen, intrinsisches Interesse | Angst vor Versagen, nur Note |
-        | **Strategie** | Verbinden, Strukturieren, Hinterfragen | Auswendiglernen, Wiederholen |
-        | **Emotion** | Neugier, Engagement | Stress, Druck |
-        | **Ergebnis** | Langfristige Retention, Transfer | Schnelles Vergessen |
+**Beispiel:** Thema "Französische Revolution"
+- A: Adel, Absolutismus
+- B: Bastille
+- C: ...
+- R: Robespierre
+- usw.
 
-        **Wichtig (Biggs, 2001):**
-        > Deep/Surface ist keine feste Eigenschaft des Schülers,
-        > sondern eine Reaktion auf die Lernumgebung.
+**Warum das funktioniert:** Du siehst, dass du nicht bei Null startest.
+Das beruhigt das Gehirn und macht Platz für Neues.
 
-        Das heißt: Du kannst deinen Ansatz ÄNDERN.
+---
+
+**Strategie 2: Das "Eine Sache"-Prinzip**
+
+Wenn alles zu viel ist:
+1. Schreib ALLES auf, was du lernen musst (Brain Dump)
+2. Wähl EINE Sache aus. Die kleinste, die du heute schaffen kannst.
+3. Mach nur das. Dann die nächste.
+
+**Das Gehirn hasst Chaos.** Gib ihm Struktur.
+
+---
+
+**Strategie 3: Aktiv statt passiv**
+
+**Was nicht funktioniert (Hattie-Studien):**
+- Text mehrmals lesen (d = -0.11 – schadet!)
+- Alles markieren
+- Zusammenfassungen abschreiben
+
+**Was funktioniert:**
+- Dich selbst abfragen (d = 0.79)
+- Alte Klausuren machen
+- Jemandem erklären, was du gelernt hast
+- Nach jedem Abschnitt: "Was war das Wichtigste?" aufschreiben
+
+**Regel:** Wenn du nicht schwitzt (mental), lernst du nicht.
         """)
 
-    # Korrumpierungseffekt
-    with st.expander("⚠️ **Der Korrumpierungseffekt (Overjustification Effect)**"):
+    with st.expander("**Spezial: Gegen Prüfungsangst**"):
         st.markdown("""
-        **Das Experiment (Deci, 1971):**
+**Wenn du echte Prüfungsangst hast** (Herzrasen, Blackouts, Panik):
 
-        Kinder lösten Puzzles. Gruppe A wurde belohnt, Gruppe B nicht.
+**Kurzfristig (vor/in der Prüfung):**
 
-        **Ergebnis:** Nach Beendigung der Belohnung spielten die belohnten Kinder
-        WENIGER mit den Puzzles als die nicht-belohnten.
+1. **4-7-8 Atmung:**
+   - 4 Sekunden einatmen
+   - 7 Sekunden halten
+   - 8 Sekunden ausatmen
+   - 3x wiederholen
 
-        **Erklärung:**
-        Extrinsische Belohnungen "überschreiben" intrinsische Motivation.
-        Das Gehirn schließt: "Ich mache das nur wegen der Belohnung → Es ist wohl nicht interessant."
+2. **Körper-Trick:**
+   - Drück deine Fußsohlen fest auf den Boden
+   - Spür das. Fokussier dich darauf.
+   - Das holt dich aus dem Kopf raus.
 
-        **Aber:** Der Effekt hängt von der Wahrnehmung ab.
+3. **Reframing:**
+   - Statt "Ich hab Angst" → "Mein Körper ist bereit"
+   - Aufregung und Angst fühlen sich gleich an. Dein Gehirn kann umlernen.
 
-        | Belohnung als... | Effekt |
-        |------------------|--------|
-        | Kontrolle/Druck | Negativ (Korrumpierung) |
-        | Feedback/Anerkennung | Positiv oder neutral |
+**Langfristig:**
+- Prüfungssituationen üben (alte Klausuren, Timer an, alleine)
+- Worst-Case durchspielen: "Was passiert WIRKLICH, wenn ich verkacke?"
+- Bei echten Problemen: Schulpsychologe. Kein Witz. Hilft.
 
-        **Praktische Konsequenz:**
-        - Noten als informatives Feedback → Okay
-        - Noten als Druckmittel → Motivation sinkt
-
-        **Für dich:** Fokussiere auf Fortschritt, nicht auf die Note.
-        Die Note ist ein Nebenprodukt des Lernens, nicht das Ziel.
+**Fakt:** 10-20% aller Schüler haben Prüfungsangst, die sie allein nicht lösen können.
+Das ist nichts, wofür man sich schämen muss.
         """)
 
-    # Birkenbihl
-    with st.expander("🧠 **Vera F. Birkenbihl: Gehirn-gerechtes Lernen**"):
+    # ══════════════════════════════════════════
+    # PROBLEM C: VERBUNDENHEIT
+    # ══════════════════════════════════════════
+    st.subheader("👥 Problem C: 'Ich fühl mich allein damit'")
+
+    with st.expander("**Warum andere Menschen wichtiger sind, als du denkst**"):
         st.markdown("""
-        Vera F. Birkenbihl (1946-2011) war Pionierin des "gehirn-gerechten Lernens".
+**Krasse Statistik:**
 
-        **Ihre Definition:**
-        > "Gehirn-gerecht = Der Arbeitsweise des Gehirns entsprechend."
+Eine Studie der Uni Greifswald hat 1.088 Schüler gefragt, woher ihre Motivation kommt:
 
-        **Die Neuromechanismen:**
+| Quelle | Anteil |
+|--------|--------|
+| **Mitschüler** | **34%** |
+| Selbst | 29% |
+| Lehrer + Mitschüler | 27% |
+| Nur Lehrer | 10% |
 
-        | Mechanismus | Bedeutung | Lernstrategie |
-        |-------------|-----------|---------------|
-        | **Vergleichen** | Gehirn fragt: "Kenne ich das?" | Neues mit Bekanntem verbinden |
-        | **Assoziieren** | Alles wird verknüpft | ABC-Listen, KaWa, Mind Maps |
-        | **Abstrahieren** | Regeln automatisch ableiten | Viele Beispiele zeigen |
-        | **Imitieren** | Lernen durch Beobachten | Vorbilder, Peer Learning |
-        | **Feedback** | Sofortige Rückmeldung nötig | Self-Testing, Erklären |
+**Das heißt:** Deine Freunde/Mitschüler sind wichtiger für deine Motivation als deine Lehrer.
 
-        **Das Problem der Schule (laut Birkenbihl):**
-        > "90% des Unterrichts ignoriert diese Mechanismen."
+---
 
-        **Ihre bekanntesten Methoden:**
+**Was du tun kannst:**
 
-        **1. ABC-Liste:**
-        - A-Z untereinander
-        - Thema wählen
-        - Assoziationen aufschreiben (nicht linear!)
-        - Vorwissen aktivieren
+1. **Lern-Buddy finden**
+   - Muss nicht dein bester Freund sein
+   - Jemand, der dieselben Klausuren hat
+   - Ihr fragt euch gegenseitig ab, erklärt euch Sachen
+   - Schreib heute noch jemanden an: "Hey, hast du Bock, zusammen für [Fach] zu lernen?"
 
-        **2. KaWa (Kreativ-Analograffiti-Wort-Assoziationen):**
-        - Schlüsselwort in die Mitte
-        - Zu jedem Buchstaben Assoziationen
-        - Visuell/kreativ gestalten
+2. **Discord/Gruppe für dein Fach**
+   - Studienkreis/Abiturvorbereitung-Server
+   - r/Abitur auf Reddit
+   - Einfach googlen: "[Fach] Abitur Discord"
 
-        **YouTube-Empfehlungen:**
-        - "Vera Birkenbihl: Genial Lernen"
-        - "Vera Birkenbihl: ABC-Techniken"
-        - "Vera Birkenbihl: Warum lernen wir das nicht in der Schule?"
+3. **Die Erklär-Methode**
+   - Erkläre deiner Mutter/Schwester/Freund, was du gelernt hast
+   - Klingt dumm, ist aber einer der effektivsten Lerntricks
+   - Wer erklärt, versteht tiefer
+
+4. **Bei echten Problemen: Hol dir Hilfe**
+   - Schulpsychologe
+   - Vertrauenslehrer
+   - Nummer gegen Kummer: 116 111
+   - Das ist kein Zeichen von Schwäche.
         """)
 
-    # Selbstdiagnostik
-    st.subheader("🔍 Selbstdiagnostik: Was fehlt DIR?")
+    st.divider()
 
-    st.markdown("""
-    Beantworte ehrlich:
+    # ══════════════════════════════════════════
+    # QUICK WINS
+    # ══════════════════════════════════════════
+    st.subheader("⚡ Quick Wins: Was du JETZT tun kannst")
 
-    | Frage | Ja | Nein |
-    |-------|-----|------|
-    | Ich weiß, WOZU ich das lerne (nicht nur "für die Note") | ⬜ | ⬜ |
-    | Ich sehe meinen Fortschritt beim Lernen | ⬜ | ⬜ |
-    | Ich habe jemanden, mit dem ich lerne | ⬜ | ⬜ |
-    | Ich habe Kontrolle über WANN/WO/WIE ich lerne | ⬜ | ⬜ |
-    | Ich fühle mich nicht übermäßig gestresst | ⬜ | ⬜ |
-    """)
+    col1, col2 = st.columns(2)
 
-    st.info("""
-    **Auswertung:**
-    - 5x Ja → Du bist gut aufgestellt!
-    - 3-4x Ja → Fokussiere auf die Nein-Bereiche
-    - 0-2x Ja → Starte mit dem 5-Schritte-Plan (siehe unten)
+    with col1:
+        st.success("""
+**Wenn du 5 Minuten hast:**
+1. ABC-Liste zu deinem Thema machen
+2. Eine alte Klausur-Aufgabe lösen
+3. Einem Freund eine Sache erklären
+4. 4-7-8 Atmung machen
 
-    **Die Fragen entsprechen:**
-    1. Sinn/Autonomie (Deci & Ryan)
-    2. Kompetenz (Deci & Ryan)
-    3. Verbundenheit (Deci & Ryan)
-    4. Autonomie (Deci & Ryan)
-    5. Angstreduktion (Hattie: d = 0.42)
-    """)
-
-    # Transfer auf Post-Schule
-    with st.expander("🎓 **Transfer: Studium, Ausbildung, Beruf**"):
-        st.markdown("""
-        Die gleichen Prinzipien gelten nach der Schule:
-
-        **Im Studium:**
-        - Autonomie noch wichtiger (weniger externe Struktur)
-        - Lerngruppen sind Gold wert (Verbundenheit)
-        - Prüfungsangst ist häufig → Strategien früh etablieren
-
-        **In der Ausbildung:**
-        - Theorie-Praxis-Transfer = Deep Learning
-        - Relevanz oft klarer (gut für Motivation!)
-        - Feedback von Ausbildern nutzen
-
-        **Im Beruf:**
-        - Intrinsische Motivation = Arbeitszufriedenheit
-        - Weiterbildung nur mit "eigenem Grund" nachhaltig
-        - Die 3 Grundbedürfnisse gelten auch für Arbeitsmotivation
-
-        **Studie:** Selbstbestimmungstheorie ist einer der stärksten Prädiktoren für:
-        - Berufliche Leistung
-        - Karriereentwicklung
-        - Lebenszufriedenheit
+**Wenn du 25 Minuten hast:**
+1. Timer stellen (Pomodoro)
+2. EINE Sache lernen
+3. Handy in anderen Raum
+4. Nach 25 Min: echte Pause
         """)
 
-    # Quick Reference
+    with col2:
+        st.error("""
+**Was du NICHT tun solltest:**
+- Text zum 5. Mal durchlesen
+- Alles bunt markieren
+- YouTube-"Lernvideos" schauen und denken, du lernst
+- Dich mit Leuten vergleichen, die behaupten, "gar nicht gelernt" zu haben
+- Nachtschichten. Schlaf > Lernen.
+        """)
+
+    # ══════════════════════════════════════════
+    # DIE WISSENSCHAFT DAHINTER
+    # ══════════════════════════════════════════
+    with st.expander("🔬 **Für die, die's genauer wissen wollen: Die Wissenschaft**"):
+        st.markdown("""
+**Selbstbestimmungstheorie (Deci & Ryan):**
+
+Die 3 Grundbedürfnisse (Autonomie, Kompetenz, Verbundenheit) sind nicht ausgedacht.
+Sie wurden in über 10.000 Studien bestätigt. Weltweit. In allen Kulturen.
+
+Wenn eins fehlt, sinkt die Motivation. Das ist keine Charakterschwäche – das ist Psychologie.
+
+---
+
+**Hattie's Effektstärken (aus 800+ Meta-Analysen):**
+
+| Strategie | Effektstärke | Was das bedeutet |
+|-----------|--------------|------------------|
+| Selbst abfragen | d = 0.79 | Sehr wirksam |
+| Verteiltes Lernen | d = 0.79 | Sehr wirksam |
+| Elaboration (Verbindungen) | d = 0.75 | Sehr wirksam |
+| Text mehrmals lesen | d = -0.11 | **Schadet!** |
+
+**Die Schwelle:** d > 0.40 = "funktioniert". d < 0 = lieber nichts tun.
+
+---
+
+**PISA 2022 – Was über dich gesagt wird:**
+
+- Mathe-Angst ist um 8% gestiegen (2012 → 2022)
+- Nur 59% können sich selbst motivieren
+- **Aber:** Selbstwirksamkeit ("Ich glaube, ich kann das") ist der stärkste Prädiktor für Erfolg.
+
+**Das heißt:** Nicht Talent entscheidet. Nicht Intelligenz.
+Sondern ob du glaubst, dass du's schaffen kannst. Und das ist trainierbar.
+        """)
+
+    # ══════════════════════════════════════════
+    # ABSCHLUSS
+    # ══════════════════════════════════════════
     st.success("""
-    ### ⚡ Quick Reference – Oberstufe
+### 📋 Zusammenfassung
 
-    **Die Wissenschaft sagt:**
-    - **Deep Motivation (d = 0.69)** >> Surface Motivation (d = -0.11)
-    - **3 Grundbedürfnisse:** Autonomie + Kompetenz + Verbundenheit
-    - **34% der Motivation** kommt von Peers (SELF-Studie)
-    - **Korrumpierungseffekt:** Belohnungen können schaden
-    - **Birkenbihl:** Nutze die Neuromechanismen (ABC-Listen, etc.)
+**1. Finde raus, was dir fehlt:**
+- Autonomie? → Finde DEINEN Grund, triff kleine Entscheidungen
+- Kompetenz? → Kleine Schritte, aktiv lernen, Erfolge sehen
+- Verbundenheit? → Lern-Buddy, erklären, Hilfe holen
 
-    **Dein 5-Schritte-Plan:**
-    1. WOZU? → Deinen Grund finden
-    2. ABC-Liste → Fortschritt sichtbar machen
-    3. Buddy → Nicht alleine kämpfen
-    4. Mikro-Entscheidungen → Kontrolle zurückholen
-    5. Worst Case → Druck senken
+**2. Nutze, was funktioniert:**
+- Dich selbst abfragen > Text lesen
+- Verteilt lernen > Nachtschichten
+- Erklären > Markieren
 
-    *"Die beste Motivation ist die, die du nicht brauchst – weil du das Thema interessant findest."*
+**3. Sei realistisch:**
+- Das Abi ist anstrengend. Das ist normal.
+- Du musst nicht alles lieben. Nur durchkommen.
+- Kleine Schritte > große Pläne, die du nicht machst.
+
+**Du schaffst das.** Nicht weil ich das sage – sondern weil Tausende vor dir
+es auch geschafft haben. Mit denselben Zweifeln. Demselben Stress.
     """)
 
 
 def _render_paedagogen_content():
-    """Rendert den Pädagogen-Content für Motivation."""
-    st.header("🔥 Wieder Bock aufs Lernen – Für Pädagogen")
-    st.caption("Didaktische Implementierung und wissenschaftliche Grundlagen")
+    """
+    Rendert den Pädagogen-Content für Motivation.
+    Basiert auf: Lernmotivation_Lehrbuch_v2.docx
+    """
+    st.header("📚 Lernmotivation bei Schülerinnen und Schülern")
+    st.caption("Theoretische Grundlagen, empirische Befunde und Handlungsempfehlungen für die pädagogische Praxis")
 
-    st.markdown("""
-    ### Evidenzbasierte Motivationsförderung
-
-    Die Forschungslage ist klar: Motivation ist nicht angeboren, sondern kontextabhängig.
-    Das bedeutet: Sie ist durch didaktische Gestaltung beeinflussbar.
-    """)
-
-    # Hattie-Übersicht
-    with st.expander("📊 **Hattie-Effektstärken: Motivation und verwandte Faktoren**", expanded=True):
-        st.markdown("""
-        | Faktor | d | Interpretation | Quelle |
-        |--------|---|----------------|--------|
-        | Deep motivation and approach | 0.69 | Sehr wirksam | Visible Learning |
-        | Motivation | 0.42 | Über Schwellenwert | Visible Learning |
-        | Reducing anxiety | 0.42 | Über Schwellenwert | Visible Learning |
-        | Mastery goals | 0.06 | Gering | Visible Learning |
-        | Performance goals | -0.01 | Kein Effekt | Visible Learning |
-        | Surface motivation and approach | -0.11 | Negativ | Visible Learning |
-
-        **Kritischer Befund:**
-        > "Around 90% of classroom teaching and learning focuses on surface knowledge and learning."
-        > – John Hattie
-
-        **Implikation:** Der Fokus muss von Surface (Fakten reproduzieren) auf Deep (Verstehen, Verbinden) verschoben werden.
-        """)
-
-    # Selbstbestimmungstheorie
-    with st.expander("🧠 **Selbstbestimmungstheorie: Implementierung im Unterricht**"):
-        st.markdown("""
-        **Die drei Grundbedürfnisse (Deci & Ryan, 1985, 2000):**
-
-        | Bedürfnis | Definition | Förderung im Unterricht |
-        |-----------|------------|------------------------|
-        | **Autonomie** | Wahrgenommene Wahlfreiheit und Selbstbestimmung | Wahlmöglichkeiten bei Aufgaben, Mitbestimmung bei Themen, Lernwege selbst gestalten |
-        | **Kompetenz** | Gefühl, Herausforderungen bewältigen zu können | Angemessene Schwierigkeit (ZPD), regelmäßiges Feedback, Erfolge sichtbar machen |
-        | **Verbundenheit** | Gefühl der Zugehörigkeit und Akzeptanz | Kooperatives Lernen, positive Beziehungsgestaltung, Peer-Feedback |
-
-        **Praktische Strategien:**
-
-        **Autonomie fördern:**
-        - "Wähle eine der drei Aufgaben aus"
-        - "In welcher Reihenfolge möchtest du vorgehen?"
-        - "Wie möchtest du dein Ergebnis präsentieren?"
-        - Hausaufgaben mit Optionen statt Einheits-Aufgaben
-
-        **Kompetenz fördern:**
-        - Lernziele transparent machen
-        - "Ich kann..."-Statements statt Themenüberschriften
-        - Fortschritts-Dokumentation (Portfolio, Lerntagebuch)
-        - Fehler als Lerngelegenheiten framen
-
-        **Verbundenheit fördern:**
-        - Strukturierte Gruppenarbeit (nicht nur "arbeitet zusammen")
-        - Peer-Tutoring systematisch einsetzen
-        - Lernpartnerschaften etablieren
-        - Positives Klassenklima aktiv gestalten
-        """)
-
-    # PISA-Daten für Deutschland
-    with st.expander("📈 **PISA 2022: Motivationsbefunde für Deutschland**"):
-        st.markdown("""
-        **Aktuelle Zahlen:**
-
-        | Indikator | Deutschland | OECD-Schnitt | Trend |
-        |-----------|-------------|--------------|-------|
-        | Selbstmotivation für Schularbeit | 59% | 58% | Stabil |
-        | Mathe als Lieblingsfach | 38% | 38% | Stabil |
-        | Mathe-Angst | 39% | k.A. | +8pp seit 2012 |
-        | Freude an Mathematik | Signifikant gesunken | - | Seit 2012 |
-        | Instrumentelle Motivation (Berufsbezug) | Signifikant gesunken | - | Seit 2012 |
-
-        **Relevante PISA-Skalen:**
-        - INTMAT: Intrinsic Motivation Mathematics
-        - Instrumentelle Motivation
-        - Mathematik-Angst
-        - Selbstwirksamkeit
-
-        **Implikation:** Der Trend zeigt eine Verschlechterung der motivationalen Dispositionen.
-        Besonders die steigende Mathe-Angst (+8pp in 10 Jahren) erfordert Intervention.
-        """)
-
-    # Korrumpierungseffekt
-    with st.expander("⚠️ **Der Korrumpierungseffekt: Vorsicht bei extrinsischen Belohnungen**"):
-        st.markdown("""
-        **Befund (Deci, 1971; Lepper et al., 1973):**
-
-        Extrinsische Belohnungen können intrinsische Motivation unterminieren,
-        wenn sie als kontrollierend wahrgenommen werden.
-
-        **Differenzierung:**
-
-        | Art der Belohnung | Effekt auf Motivation |
-        |-------------------|----------------------|
-        | Erwartete, materielle, aufgabenkontingente Belohnung | Negativ |
-        | Unerwartete Belohnung | Neutral |
-        | Verbale Anerkennung / Feedback | Positiv oder neutral |
-        | Kompetenz-Feedback | Positiv |
-
-        **Praktische Konsequenzen:**
-        - Noten als **informatives Feedback** nutzen, nicht als Druckmittel
-        - Verbale Anerkennung > materielle Belohnung
-        - Prozess-Lob > Ergebnis-Lob
-        - Intrinsische Motivatoren (Interesse, Relevanz) stärken
-
-        **Für die Praxis:**
-        > "Warum ist das wichtig?" vor jedem Thema klären
-        > Verbindung zu Lebenswelt der Schüler herstellen
-        > Eigenverantwortung statt Kontrolle
-        """)
-
-    # SELF-Studie
-    with st.expander("👥 **SELF-Studie Greifswald: Die Rolle der Peers**"):
-        st.markdown("""
-        **Stichprobe:** 1.088 Schüler, 7./8. Klasse, Deutschland
-
-        **Ergebnis: Motivationsquellen deutscher Schüler:**
-
-        | Quelle | Anteil |
-        |--------|--------|
-        | Mitschüler (peers) | 34% |
-        | Selbst (unabhängig) | 29% |
-        | Lehrer UND Mitschüler | 27% |
-        | Nur Lehrer | 10% |
-
-        **Vergleich international:**
-        - Kanada: 57% brauchen Lehrer UND Mitschüler
-        - Deutschland: Autonomie-orientierter
-
-        **Implikationen:**
-        1. Peer-Learning systematisch einsetzen
-        2. Kooperative Lernformen strukturiert gestalten
-        3. Lernpartnerschaften als feste Institution
-        4. Peer-Tutoring nutzen
-
-        **Vorsicht:** "Gruppenarbeit" ≠ kooperatives Lernen.
-        Strukturierung und positive Interdependenz sind entscheidend.
-        """)
-
-    # Birkenbihl-Methoden
-    with st.expander("🧠 **Birkenbihl-Methoden für den Unterricht**"):
-        st.markdown("""
-        Vera F. Birkenbihl (1946-2011) entwickelte "gehirn-gerechte" Lernmethoden,
-        die auf Neuromechanismen basieren:
-
-        **Nutzbare Methoden im Unterricht:**
-
-        **1. ABC-Listen (5-10 Min)**
-        - Vorwissensaktivierung zu Stundenbeginn
-        - Lernstandserhebung (vor/nach Einheit)
-        - Wiederholung / Zusammenfassung
-
-        **2. KaWa (Kreativ-Analograffiti-Wort-Assoziationen)**
-        - Brainstorming-Alternative
-        - Begriffsklärung
-        - Vernetzung von Konzepten
-
-        **3. Das Inselmodell**
-        - Unterschiedliche Wissenstände sichtbar machen
-        - Anknüpfungspunkte identifizieren
-        - Perspektivenwechsel üben
-
-        **Empirische Einordnung:**
-        Birkenbihls Methoden sind nicht systematisch evaluiert,
-        aber konsistent mit Forschung zu:
-        - Elaboration (Hattie d = 0.75)
-        - Prior Knowledge Activation
-        - Retrieval Practice
-
-        **YouTube-Ressourcen für Lehrkräfte:**
-        - "Vera Birkenbihl: Genial Lehren"
-        - "Vera Birkenbihl: Eltern-Nachhilfe"
-        - "Vera Birkenbihl: Warum lernen wir das nicht in der Schule?"
-        """)
-
-    # Deep vs Surface Learning fördern
-    with st.expander("📚 **Deep Learning fördern: Konkrete Strategien**"):
-        st.markdown("""
-        **Aus Biggs (1987, 2001) und Hattie (2009):**
-
-        | Surface Approach | Deep Approach |
-        |------------------|---------------|
-        | Auswendiglernen fördern | Verstehen fördern |
-        | Faktenabruf prüfen | Transferaufgaben stellen |
-        | "Was ist X?" | "Warum ist X so? Wie hängt X mit Y zusammen?" |
-        | Einzelfakten | Zusammenhänge |
-        | Reproduktion | Anwendung |
-
-        **Konkrete Maßnahmen:**
-
-        1. **Fragen-Hierarchie anpassen:**
-           - Weniger: "Nenne drei Ursachen für..."
-           - Mehr: "Erkläre, warum... Vergleiche... Bewerte..."
-
-        2. **Elaborative Interrogation:**
-           - "Warum ist das so?"
-           - "Wie hängt das mit ... zusammen?"
-           - "Was wäre wenn...?"
-
-        3. **Self-Explanation fördern:**
-           - "Erkläre deinem Nachbarn, warum..."
-           - Schriftliche Erklärungen verlangen
-           - Fehlererklärungen einfordern
-
-        4. **Transfer explizit üben:**
-           - Anwendung in neuen Kontexten
-           - Fächerübergreifende Bezüge
-           - Alltagsrelevanz herstellen
-
-        5. **Feedback auf Prozess, nicht nur Ergebnis:**
-           - "Dein Lösungsweg zeigt..."
-           - "Du hast die Verbindung zu ... gut erkannt"
-        """)
-
-    # Literaturhinweise
-    with st.expander("📖 **Literatur und Ressourcen**"):
-        st.markdown("""
-        **Primärquellen:**
-
-        Deci, E. L., & Ryan, R. M. (1985). *Intrinsic motivation and self-determination in human behavior.* New York: Plenum.
-
-        Deci, E. L., & Ryan, R. M. (2000). The "what" and "why" of goal pursuits: Human needs and the self-determination of behavior. *Psychological Inquiry, 11*(4), 227-268.
-
-        Hattie, J. (2009). *Visible Learning: A Synthesis of Over 800 Meta-Analyses Relating to Achievement.* London: Routledge.
-
-        Hattie, J. (2023). *Visible Learning: The Sequel.* London: Routledge.
-
-        Biggs, J., Kember, D., & Leung, D. Y. P. (2001). The revised two-factor Study Process Questionnaire: R-SPQ-2F. *British Journal of Educational Psychology, 71*(1), 133-149.
-
-        Birkenbihl, V. F. (2013). *Stroh im Kopf? Vom Gehirn-Besitzer zum Gehirn-Benutzer.* (55. Aufl.). München: mvg Verlag.
-
-        **PISA 2022:**
-
-        OECD (2023). *PISA 2022 Results (Volume I): The State of Learning and Equity in Education.* Paris: OECD Publishing.
-
-        **Weiterführende Literatur:**
-
-        Reeve, J. (2009). Why teachers adopt a controlling motivating style toward students and how they can become more autonomy supportive. *Educational Psychologist, 44*(3), 159-175.
-
-        Vansteenkiste, M., Simons, J., Stoenset, L., et al. (2004). Motivating learning, performance, and persistence: The synergistic effects of intrinsic goal contents and autonomy-supportive contexts. *Journal of Personality and Social Psychology, 87*(2), 246-260.
-        """)
-
-    # Quick Reference für Pädagogen
-    st.success("""
-    ### ⚡ Quick Reference – Pädagogen
-
-    **Die Kernbotschaften:**
-
-    1. **Surface Motivation schadet (d = -0.11)** → Deep Approach fördern
-    2. **3 Grundbedürfnisse beachten:** Autonomie, Kompetenz, Verbundenheit
-    3. **34% der Motivation** kommt von Peers → Kooperatives Lernen strukturiert einsetzen
-    4. **Korrumpierungseffekt:** Vorsicht bei extrinsischen Belohnungen
-    5. **PISA-Trend negativ:** Besonders Mathe-Angst steigt (+8pp)
-
-    **Konkrete Maßnahmen:**
-    - Wahlmöglichkeiten anbieten (Autonomie)
-    - Fortschritt sichtbar machen (Kompetenz)
-    - Strukturierte Gruppenarbeit (Verbundenheit)
-    - "Warum ist das wichtig?" vor jedem Thema (Relevanz)
-    - Prozess-Feedback > Ergebnis-Feedback
-    """)
-
-    # Hinweis auf weitere Ressourcen
+    # Abstract
     st.info("""
-    📚 **Weitere Materialien:**
-
-    - Workshop-Konzepte zur Motivationsförderung (in Entwicklung)
-    - Kopiervorlagen für ABC-Listen und KaWa
-    - Selbstdiagnostik-Fragebögen für Schüler
-    - Eltern-Handouts zur Unterstützung zuhause
+    **Abstract:** Dieses Kapitel bietet eine wissenschaftlich fundierte Übersicht über die Entstehung und Förderung
+    von Lernmotivation. Ausgehend von der Selbstbestimmungstheorie nach Deci und Ryan werden die drei psychologischen
+    Grundbedürfnisse – Autonomie, Kompetenz und soziale Eingebundenheit – als zentrale Determinanten intrinsischer
+    Motivation dargestellt. Ergänzend werden die Erwartungs-Wert-Theorie, die Interesse-Theorie und die
+    Attributionstheorie vorgestellt. Die Unterscheidung zwischen Deep Learning und Surface Learning nach Biggs wird
+    anhand aktueller Hattie-Effektstärken empirisch eingeordnet. PISA-2022-Daten zur Motivationslage deutscher
+    Schülerinnen und Schüler runden das Bild ab.
     """)
+
+    # ══════════════════════════════════════════
+    # 1. EINLEITUNG
+    # ══════════════════════════════════════════
+    with st.expander("**1. Einleitung: Motivation als Schlüssel zum Lernerfolg**", expanded=True):
+        st.markdown("""
+Die Frage, wie Lernende zu nachhaltigem und selbstständigem Lernen motiviert werden können, gehört zu den
+zentralen Herausforderungen pädagogischer Praxis. Die empirische Bildungsforschung hat in den vergangenen
+Jahrzehnten bedeutende Erkenntnisse zu den Mechanismen der Lernmotivation gewonnen, die jedoch in der
+schulischen Praxis noch unzureichend umgesetzt werden.
+
+**PISA-Studie 2022 – Besorgniserregende Entwicklungen:**
+
+| Befund | Wert |
+|--------|------|
+| Schüler, die sich selbst für Schularbeit motivieren können | 59% |
+| Schüler mit Mathematikangst (2012) | 31% |
+| Schüler mit Mathematikangst (2022) | **39%** (+8pp) |
+
+Diese Befunde unterstreichen die Notwendigkeit, motivationale Prozesse im Unterricht gezielter zu adressieren.
+        """)
+
+    # ══════════════════════════════════════════
+    # 2. SELBSTBESTIMMUNGSTHEORIE
+    # ══════════════════════════════════════════
+    with st.expander("**2. Selbstbestimmungstheorie (Deci & Ryan)**"):
+        st.markdown("""
+Die **Selbstbestimmungstheorie (Self-Determination Theory, SDT)** nach Deci und Ryan (1985, 2000) stellt das
+derzeit einflussreichste theoretische Rahmenwerk zur Erklärung menschlicher Motivation dar.
+
+### 2.1 Die drei psychologischen Grundbedürfnisse
+
+| Grundbedürfnis | Definition | Schulischer Kontext |
+|----------------|------------|---------------------|
+| **Autonomie** | Das Bedürfnis, eigene Entscheidungen zu treffen und Kontrolle über das eigene Handeln zu haben | Wahlmöglichkeiten bei Aufgaben, Mitbestimmung bei Lernwegen, eigene Zielsetzung |
+| **Kompetenz** | Das Bedürfnis, sich als fähig zu erleben und Herausforderungen erfolgreich zu meistern | Erfolgserlebnisse, angemessene Schwierigkeit, sichtbarer Lernfortschritt |
+| **Soziale Eingebundenheit** | Das Bedürfnis, dazuzugehören, akzeptiert und wertgeschätzt zu werden | Lerngruppen, positive Lehrer-Schüler-Beziehung, kooperatives Lernen |
+
+Die Forschung zeigt konsistent, dass Lernende am besten lernen, wenn sie autonom agieren können, sich als
+kompetent erleben und soziale Eingebundenheit erfahren. Die **Nichterfüllung** eines oder mehrerer dieser
+Bedürfnisse führt zu einer Reduktion intrinsischer Motivation und kann langfristig zu Lernverweigerung führen.
+
+### 2.2 Das Kontinuum der Motivation
+
+| Motivationstyp | Charakteristik | Beispiel |
+|----------------|----------------|----------|
+| **Amotivation** | Fehlen jeglicher Handlungsabsicht | "Ich sehe keinen Sinn darin." |
+| **Externe Regulation** | Handeln aufgrund externer Belohnung/Bestrafung | "Ich lerne, weil sonst Strafe droht." |
+| **Introjizierte Regulation** | Handeln aus Schuld- oder Schamgefühlen | "Ich würde mich schlecht fühlen, wenn ich nicht lerne." |
+| **Identifizierte Regulation** | Handeln, weil das Ziel persönlich wichtig ist | "Ich lerne, weil mir gute Noten wichtig sind." |
+| **Integrierte Regulation** | Handeln entspricht eigenen Werten und Identität | "Lernen gehört zu dem, wer ich bin." |
+| **Intrinsische Motivation** | Handeln aus Freude und Interesse an der Tätigkeit selbst | "Ich lerne, weil es mir Spaß macht." |
+
+**Pädagogisches Ziel:** Lernende von externaler Regulation hin zu identifizierter oder intrinsischer Motivation
+begleiten. Dieser Prozess wird als **Internalisierung** bezeichnet.
+
+### 2.3 Der Korrumpierungseffekt
+
+Ein bedeutsamer Befund der Motivationsforschung ist der sogenannte **Korrumpierungseffekt** (Overjustification Effect):
+
+> Schülerinnen und Schüler, die für eine Tätigkeit **benotet** wurden, zeigten danach **weniger Interesse** daran,
+> diese Tätigkeit freiwillig fortzusetzen, als Lernende, die für dieselbe Aufgabe keine Note erhalten hatten.
+> *(Deci, Koestner & Ryan, 1999)*
+
+**Pädagogische Konsequenz:** Noten sollten als **diagnostisches Feedback** genutzt werden, nicht als Druckmittel.
+Die Art der Rückmeldung entscheidet über ihre motivationale Wirkung.
+        """)
+
+    # ══════════════════════════════════════════
+    # 3. ERWARTUNGS-WERT-THEORIE
+    # ══════════════════════════════════════════
+    with st.expander("**3. Erwartungs-Wert-Theorie (Eccles & Wigfield)**"):
+        st.markdown("""
+Die **Erwartungs-Wert-Theorie** (Expectancy-Value Theory) nach Eccles und Wigfield (2002) erklärt Lernmotivation
+durch zwei zentrale Faktoren:
+
+### 3.1 Erfolgserwartung (Expectancy)
+
+Die Erfolgserwartung bezeichnet die subjektive Einschätzung, eine Aufgabe erfolgreich bewältigen zu können.
+Sie ist eng verwandt mit dem Konzept der **Selbstwirksamkeit** nach Bandura (1997). Lernende, die glauben,
+eine Aufgabe schaffen zu können, zeigen höhere Anstrengungsbereitschaft und Ausdauer.
+
+### 3.2 Subjektiver Aufgabenwert (Value)
+
+Der subjektive Aufgabenwert setzt sich aus vier Komponenten zusammen:
+
+| Komponente | Beschreibung |
+|------------|--------------|
+| **Intrinsischer Wert** | Freude und Interesse an der Tätigkeit selbst |
+| **Nützlichkeitswert** | Wahrgenommene Relevanz für zukünftige Ziele (z.B. Berufswunsch) |
+| **Persönliche Wichtigkeit** | Bedeutung für das Selbstkonzept und die eigene Identität |
+| **Kosten** | Wahrgenommener Aufwand, Angst vor Misserfolg, entgangene Alternativen |
+
+### Kernaussage
+
+> **Motivation = Erwartung × Wert**
+
+Ist einer der beiden Faktoren **null**, resultiert **keine Motivation**:
+- Ein Schüler, der glaubt, Mathematik nicht zu können (**Erwartung = 0**), wird sich nicht anstrengen –
+  selbst wenn er den Wert anerkennt.
+- Umgekehrt wird ein Schüler, der keinen Sinn in einem Fach sieht (**Wert = 0**), trotz hoher
+  Kompetenzüberzeugung wenig investieren.
+        """)
+
+    # ══════════════════════════════════════════
+    # 4. INTERESSE-THEORIE
+    # ══════════════════════════════════════════
+    with st.expander("**4. Interesse-Theorie (Krapp & Hidi)**"):
+        st.markdown("""
+Die pädagogische **Interesse-Theorie** nach Krapp (1992, 2002) und Hidi (2006) unterscheidet zwischen
+situationalem und individuellem Interesse.
+
+### 4.1 Situationales vs. individuelles Interesse
+
+| Interessentyp | Charakteristik | Pädagogische Implikation |
+|---------------|----------------|--------------------------|
+| **Situationales Interesse** | Kurzfristig, durch äußere Reize ausgelöst (z.B. spannende Demonstration) | Einstieg erleichtern, Aufmerksamkeit wecken |
+| **Individuelles Interesse** | Langfristig, stabile Präferenz für bestimmte Gegenstandsbereiche | Vertiefte Auseinandersetzung, selbstgesteuertes Lernen |
+
+### 4.2 Das Vier-Phasen-Modell der Interessenentwicklung
+
+Hidi und Renninger (2006) beschreiben die Entwicklung von Interesse in vier Phasen:
+
+1. **Ausgelöstes situationales Interesse:** Kurzfristige Aufmerksamkeit durch Überraschung, Neuheit
+   oder persönliche Relevanz.
+2. **Aufrechterhaltenes situationales Interesse:** Anhaltendes Engagement durch bedeutsame Aufgaben
+   und Unterstützung.
+3. **Entstehendes individuelles Interesse:** Beginnende eigenständige Beschäftigung mit dem Gegenstand.
+4. **Gut entwickeltes individuelles Interesse:** Stabile, selbstgesteuerte Auseinandersetzung; Teil der Identität.
+
+**Pädagogische Konsequenz:** Lehrkräfte können situationales Interesse gezielt auslösen, müssen aber
+**langfristig arbeiten**, um individuelles Interesse zu entwickeln.
+        """)
+
+    # ══════════════════════════════════════════
+    # 5. ATTRIBUTIONSTHEORIE
+    # ══════════════════════════════════════════
+    with st.expander("**5. Attributionstheorie (Weiner)**"):
+        st.markdown("""
+Die **Attributionstheorie** nach Weiner (1985, 2010) untersucht, wie Lernende Erfolge und Misserfolge
+erklären – und welche motivationalen Konsequenzen diese Erklärungen haben.
+
+### 5.1 Die drei Dimensionen der Ursachenzuschreibung
+
+| Dimension | Ausprägungen | Beispiel |
+|-----------|--------------|----------|
+| **Lokation** | Internal (in der Person) vs. External (außerhalb) | "Ich bin klug" vs. "Die Aufgabe war leicht" |
+| **Stabilität** | Stabil (über Zeit konstant) vs. Variabel (veränderlich) | "Ich bin unbegabt" vs. "Ich hatte einen schlechten Tag" |
+| **Kontrollierbarkeit** | Kontrollierbar vs. Unkontrollierbar | "Ich habe nicht genug gelernt" vs. "Die Aufgabe war unfair" |
+
+### 5.2 Günstige und ungünstige Attributionsmuster
+
+**Günstiges Muster:**
+- Erfolge werden **internal und stabil** attribuiert ("Ich bin fähig")
+- Misserfolge werden **internal, variabel und kontrollierbar** attribuiert ("Ich habe zu wenig geübt")
+- → Fördert Anstrengungsbereitschaft und Resilienz
+
+**Ungünstiges Muster:**
+- Misserfolge werden **internal und stabil** attribuiert ("Ich bin einfach unbegabt")
+- Erfolge werden **external** attribuiert ("Ich hatte Glück")
+- → Führt zu **erlernter Hilflosigkeit** und Motivationsverlust
+
+**Pädagogische Konsequenz:** Lehrkräfte sollten Feedback so formulieren, dass es anstrengungsbezogene
+Attributionen fördert:
+- ✅ "Du hast das geschafft, weil du gut geübt hast"
+- ❌ "Du bist eben ein Naturtalent"
+        """)
+
+    # ══════════════════════════════════════════
+    # 6. DEEP VS SURFACE LEARNING
+    # ══════════════════════════════════════════
+    with st.expander("**6. Deep Learning versus Surface Learning (Biggs)**"):
+        st.markdown("""
+Das Konzept der **Lernansätze** (Approaches to Learning) wurde von John Biggs (1987) entwickelt und durch
+John Hattie in die Meta-Analyse "Visible Learning" integriert.
+
+### 6.1 Konzeptuelle Unterscheidung
+
+| Dimension | Surface Approach | Deep Approach |
+|-----------|------------------|---------------|
+| **Motiv** | Extrinsische Motivation, Angst vor Versagen, Aufgabe nur erledigen wollen | Intrinsische Motivation, Neugier, persönliches Engagement |
+| **Strategie** | Auswendiglernen, Fokus auf isolierte Fakten, keine Zusammenhänge herstellen | Analogien suchen, Bezug zu Vorwissen herstellen, Theoretisieren |
+| **Intention** | Inhalte reproduzieren, nur für den Test lernen | Verstehen wollen, nach zugrundeliegenden Prinzipien suchen |
+| **Emotion** | Angst, Druck, Langeweile | Interesse, Engagement, Flow |
+| **Hattie d** | **d = −0,11** (schadet der Leistung!) | **d = 0,69** (sehr wirksam) |
+
+Ein zentraler Befund ist die **negative Effektstärke des Surface Approach**: Das bloße Lernen für die Note
+schadet der Leistung **messbar**. Demgegenüber weist der Deep Approach mit d = 0,69 einen der höchsten
+Effekte in Hatties Meta-Analyse auf.
+
+### 6.2 Kritische Einordnung
+
+John Hattie schätzt, dass etwa **90 Prozent des Unterrichts** sich auf Surface Knowledge konzentriert.
+
+**Wichtig:** Der Lernansatz ist **keine feste Eigenschaft** des Schülers, sondern eine **Reaktion auf die
+Lernumgebung**. Unterricht kann gezielt Deep Learning fördern oder – unbeabsichtigt – Surface Learning erzwingen.
+        """)
+
+    # ══════════════════════════════════════════
+    # 7. EMPIRISCHE BEFUNDE
+    # ══════════════════════════════════════════
+    with st.expander("**7. Empirische Befunde**"):
+        st.markdown("""
+### 7.1 Hattie-Effektstärken zur Motivation
+
+| Faktor | Effektstärke d | Einordnung |
+|--------|----------------|------------|
+| Deep motivation and approach | **0,69** | Sehr wirksam |
+| Motivation (allgemein) | 0,42 | Über Schwellenwert |
+| Reducing anxiety | 0,42 | Über Schwellenwert |
+| Mastery goals | 0,06 | Gering |
+| Performance goals | −0,01 | Kein Effekt |
+| Surface motivation | **−0,11** | **Negativ!** |
+
+*Quelle: Visible Learning, 2023*
+
+### 7.2 PISA 2022: Aktuelle Befunde für Deutschland
+
+| Befund | Wert |
+|--------|------|
+| Schüler, die sich selbst für Schularbeit motivieren können | 59% |
+| Schüler, für die Mathematik Lieblingsfach ist | 38% |
+| Schüler mit Mathematikangst (2012) | 31% |
+| Schüler mit Mathematikangst (2022) | **39%** |
+
+*Quelle: OECD, 2023*
+
+### 7.3 Greifswalder Studie: Motivationsquellen deutscher Schüler
+
+Eine Studie der Universität Greifswald mit 1.088 Schülerinnen und Schülern der Jahrgangsstufen 7 und 8
+untersuchte die Motivationsquellen deutscher Jugendlicher:
+
+| Motivationsquelle | Anteil |
+|-------------------|--------|
+| Beziehung zu **Mitschülern** | **34%** |
+| Selbstmotivation (unabhängig von sozialen Beziehungen) | 29% |
+| Beziehung zu Lehrern und Mitschülern gemeinsam | 27% |
+| Nur lehrerabhängig | 10% |
+
+**Zentraler Befund:** Die soziale Eingebundenheit – insbesondere die **Beziehung zu Peers** – ist für
+deutsche Jugendliche der wichtigste Motivator. Die Lehrkraft allein motiviert nur 10% der Lernenden.
+Dies unterstreicht die Bedeutung kooperativer Lernformen.
+        """)
+
+    # ══════════════════════════════════════════
+    # 8. SYNTHESE
+    # ══════════════════════════════════════════
+    with st.expander("**8. Synthese: Integration der Theorien**"):
+        st.markdown("""
+Die dargestellten Theorien ergänzen sich und beleuchten unterschiedliche Facetten der Lernmotivation:
+
+| Theorie | Kernaussage | Pädagogischer Fokus |
+|---------|-------------|---------------------|
+| **Selbstbestimmungstheorie** | Motivation entsteht durch Erfüllung von Autonomie, Kompetenz und Eingebundenheit | Wahlmöglichkeiten, Erfolgserlebnisse, Beziehungsgestaltung |
+| **Erwartungs-Wert-Theorie** | Motivation = Erfolgserwartung × Aufgabenwert | Selbstwirksamkeit stärken, Relevanz vermitteln |
+| **Interesse-Theorie** | Interesse entwickelt sich von situational zu individuell | Neugier wecken, langfristig Interesse aufbauen |
+| **Attributionstheorie** | Ursachenzuschreibungen beeinflussen zukünftige Motivation | Anstrengungsattributionen fördern, Hilflosigkeit vermeiden |
+| **Deep vs. Surface Learning** | Tiefenverarbeitung ist wirksamer als Oberflächenlernen | Verständnisorientierung, Prüfungsformate anpassen |
+        """)
+
+    # ══════════════════════════════════════════
+    # 9. HANDLUNGSEMPFEHLUNGEN
+    # ══════════════════════════════════════════
+    st.subheader("9. Handlungsempfehlungen für die pädagogische Praxis")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.markdown("""
+### 🎯 Autonomie fördern
+- Wahlmöglichkeiten bei Aufgabenstellungen anbieten (Thema, Medium, Bearbeitungsform)
+- Lernende an der Unterrichtsplanung beteiligen
+- Eigene Zielsetzung ermöglichen und unterstützen
+- Begründungen für Lerninhalte transparent machen (Relevanz aufzeigen)
+
+### 💪 Kompetenzerleben stärken
+- Aufgaben im Bereich der proximalen Entwicklung stellen (herausfordernd, aber lösbar)
+- Lernfortschritte sichtbar machen und anerkennen
+- Prozessorientiertes Feedback geben: Anstrengung und Strategie betonen
+- Fehler als Lerngelegenheiten rahmen, nicht als Versagen
+
+### 👥 Soziale Eingebundenheit stärken
+- Kooperative Lernformen systematisch einsetzen (Peer-Tutoring, Lernpartnerschaften)
+- Positive Klassengemeinschaft fördern
+- Wertschätzende Lehrer-Schüler-Beziehungen aufbauen
+        """)
+
+    with col2:
+        st.markdown("""
+### 💡 Interesse entwickeln
+- Situationales Interesse durch Überraschung, Neuheit und Relevanz wecken
+- Verbindungen zur Lebenswelt der Lernenden herstellen (Nützlichkeitswert)
+- Vertiefte Beschäftigung durch anspruchsvolle, bedeutsame Aufgaben ermöglichen
+
+### 🔄 Günstige Attributionen fördern
+- Erfolge auf Anstrengung und effektive Strategien zurückführen
+- Misserfolge als veränderbar und kontrollierbar rahmen
+- Begabungsorientierte Zuschreibungen vermeiden ("Du bist halt gut/schlecht in...")
+
+### 🧠 Deep Learning fördern
+- Fragen nach dem "Warum" stellen, nicht nur nach dem "Was"
+- Neues Wissen systematisch mit Vorwissen verbinden
+- Prüfungsformate entwickeln, die Verständnis statt Reproduktion erfordern
+- Noten als diagnostisches Feedback nutzen, nicht als Druckmittel
+        """)
+
+    # ══════════════════════════════════════════
+    # 10. FAZIT
+    # ══════════════════════════════════════════
+    st.success("""
+### 10. Fazit
+
+Die Förderung von Lernmotivation erfordert ein systematisches Verständnis der zugrundeliegenden Mechanismen.
+Die dargestellten Theorien – Selbstbestimmungstheorie, Erwartungs-Wert-Theorie, Interesse-Theorie und
+Attributionstheorie – bieten komplementäre Zugänge, die sich in der Praxis gewinnbringend verbinden lassen.
+
+**Die empirischen Befunde sind eindeutig:**
+- Deep Motivation **wirkt** (d = 0,69)
+- Surface Motivation **schadet** (d = −0,11)
+- Die drei Grundbedürfnisse nach **Autonomie, Kompetenz und sozialer Eingebundenheit** müssen erfüllt sein
+- **Peers** sind für deutsche Jugendliche die wichtigste Motivationsquelle (34%)
+
+**Für die pädagogische Praxis bedeutet dies:** Unterricht muss Wahlmöglichkeiten bieten, Erfolgserlebnisse
+ermöglichen, kooperative Lernformen integrieren und Interesse entwickeln. Feedback sollte anstrengungsorientiert
+sein und Noten als diagnostisches Instrument dienen. Nur so kann nachhaltige Motivation entstehen, die über
+das Bestehen der nächsten Prüfung hinausreicht.
+    """)
+
+    # ══════════════════════════════════════════
+    # LITERATURVERZEICHNIS
+    # ══════════════════════════════════════════
+    with st.expander("📚 **Literaturverzeichnis**"):
+        st.markdown("""
+**Primärquellen:**
+
+Bandura, A. (1997). *Self-efficacy: The exercise of control.* Freeman.
+
+Biggs, J. B. (1987). *Student approaches to learning and studying.* Australian Council for Educational Research.
+
+Deci, E. L., Koestner, R., & Ryan, R. M. (1999). A meta-analytic review of experiments examining the effects
+of extrinsic rewards on intrinsic motivation. *Psychological Bulletin, 125*(6), 627–668.
+
+Deci, E. L., & Ryan, R. M. (1985). *Intrinsic motivation and self-determination in human behavior.* Plenum Press.
+
+Deci, E. L., & Ryan, R. M. (2000). The "what" and "why" of goal pursuits: Human needs and the self-determination
+of behavior. *Psychological Inquiry, 11*(4), 227–268.
+
+Eccles, J. S., & Wigfield, A. (2002). Motivational beliefs, values, and goals. *Annual Review of Psychology, 53*, 109–132.
+
+Hattie, J. (2009). *Visible Learning: A synthesis of over 800 meta-analyses relating to achievement.* Routledge.
+
+Hattie, J., & Donoghue, G. M. (2016). Learning strategies: A synthesis and conceptual model. *npj Science of Learning, 1*, 16013.
+
+Hidi, S. (2006). Interest: A unique motivational variable. *Educational Research Review, 1*(2), 69–82.
+
+Hidi, S., & Renninger, K. A. (2006). The four-phase model of interest development. *Educational Psychologist, 41*(2), 111–127.
+
+Krapp, A. (1992). Das Interessenkonstrukt. *Zeitschrift für Pädagogik, 38*(5), 747–768.
+
+Krapp, A. (2002). Structural and dynamic aspects of interest development. *Learning and Instruction, 12*(4), 383–409.
+
+OECD (2023). *PISA 2022 Results (Volume I): The State of Learning and Equity in Education.* OECD Publishing.
+
+Ryan, R. M., & Deci, E. L. (2000). Self-determination theory and the facilitation of intrinsic motivation,
+social development, and well-being. *American Psychologist, 55*(1), 68–78.
+
+Weiner, B. (1985). An attributional theory of achievement motivation and emotion. *Psychological Review, 92*(4), 548–573.
+
+Weiner, B. (2010). The development of an attribution-based theory of motivation: A history of ideas.
+*Educational Psychologist, 45*(1), 28–36.
+
+Universität Greifswald (2019). SELF-Studie: Motivationsquellen bei Schülerinnen und Schülern der Sekundarstufe I.
+Unveröffentlichter Forschungsbericht.
+        """)

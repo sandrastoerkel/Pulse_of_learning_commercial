@@ -38,17 +38,53 @@ except ImportError:
 # ============================================
 
 def render_learnstrat_altersstufen(color: str):
-    """Rendert die Lernstrategien-Ressource mit Challenges + Theorie-Tabs"""
+    """Rendert die Lernstrategien-Ressource mit Challenges + Theorie-Buttons"""
 
-    tab_interaktiv, tab_theorie = st.tabs([
-        "🎮 Challenges",
-        "📚 Theorie dahinter"
-    ])
+    # Session State für Tab-Auswahl
+    if "learnstrat_tab" not in st.session_state:
+        st.session_state.learnstrat_tab = "challenges"
+
+    # Große auffällige Auswahl-Buttons
+    col1, col2 = st.columns(2)
+
+    with col1:
+        is_challenges = st.session_state.learnstrat_tab == "challenges"
+        if is_challenges:
+            st.markdown(f"""
+            <div style="background: {color}; color: white; padding: 20px; border-radius: 12px;
+                        text-align: center; cursor: default;">
+                <div style="font-size: 2em;">🎮</div>
+                <div style="font-size: 1.2em; font-weight: bold;">Challenges</div>
+                <div style="font-size: 0.85em; opacity: 0.9;">Interaktive Übungen</div>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            if st.button("🎮\nChallenges\nInteraktive Übungen", key="btn_learnstrat_challenges", use_container_width=True):
+                st.session_state.learnstrat_tab = "challenges"
+                st.rerun()
+
+    with col2:
+        is_theorie = st.session_state.learnstrat_tab == "theorie"
+        if is_theorie:
+            st.markdown(f"""
+            <div style="background: {color}; color: white; padding: 20px; border-radius: 12px;
+                        text-align: center; cursor: default;">
+                <div style="font-size: 2em;">📚</div>
+                <div style="font-size: 1.2em; font-weight: bold;">Theorie dahinter</div>
+                <div style="font-size: 0.85em; opacity: 0.9;">Wissenschaftlicher Hintergrund</div>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            if st.button("📚\nTheorie dahinter\nWissenschaftlicher Hintergrund", key="btn_learnstrat_theorie", use_container_width=True):
+                st.session_state.learnstrat_tab = "theorie"
+                st.rerun()
+
+    st.divider()
 
     # ==========================================
-    # TAB 1: CHALLENGES
+    # CHALLENGES-Bereich
     # ==========================================
-    with tab_interaktiv:
+    if st.session_state.learnstrat_tab == "challenges":
         if HAS_LEARNSTRAT and HAS_GAMIFICATION and is_logged_in():
             # User ist eingeloggt - zeige die Challenges
             user = get_current_user()
@@ -113,9 +149,9 @@ def render_learnstrat_altersstufen(color: str):
             """)
 
     # ==========================================
-    # TAB 2: THEORIE DAHINTER (mit Altersstufen-Auswahl)
+    # THEORIE-Bereich
     # ==========================================
-    with tab_theorie:
+    else:
         # Altersstufen-Auswahl als Buttons
         st.markdown("### Wähle deine Altersstufe:")
 
@@ -184,7 +220,7 @@ def render_learnstrat_altersstufen(color: str):
 - Die Wissenschaft: Was WIRKLICH funktioniert (mit Zahlen!)
 - Die 7 Power-Techniken (speziell für dich angepasst)
 - Transfer: Das Geheimnis der Überflieger
-- Birkenbihl-Methode: Der Faden-Trick
+- Birkenbihl-Methoden: Faden-Trick, ABC-Liste, KaWa
 - Das Paradox: Warum sich gutes Lernen schlecht anfühlt
                 """)
 
@@ -399,15 +435,12 @@ Das ist die Frage aller Fragen. Und die Antwort ist: **TRANSFER**. Transfer bede
             st.divider()
 
             # ========== 5. BIRKENBIHL ==========
-            st.markdown("### 5. 🧵 Birkenbihl-Methode: Der Faden-Trick")
+            st.markdown("### 5. 🧵 Birkenbihl-Methoden: Gehirn-gerechtes Lernen")
+            st.markdown("*Vera F. Birkenbihl war eine deutsche Lernexpertin, die gezeigt hat, wie man mit dem Gehirn arbeitet – nicht dagegen.*")
 
-            with st.expander("Schreib auf, was DU denkst!"):
+            with st.expander("🧶 Der Faden-Trick"):
                 st.markdown("""
 *"Schreib nicht auf, was ich sage. Schreib auf, was DU denkst!"*
-
-Vera F. Birkenbihl war eine deutsche Lernexpertin und hat etwas Radikales behauptet: Die Art, wie die Schule dir Notizen-Machen beigebracht hat, ist falsch.
-
-**Das "Faden"-Prinzip:**
 
 Birkenbihl sagt: Jede neue Information braucht einen "Faden" – einen Anknüpfungspunkt in deinem bestehenden Wissen. Ohne Faden geht Information *"hier rein, da raus"*. Mit Faden bleibt sie hängen.
 
@@ -417,6 +450,57 @@ Birkenbihl sagt: Jede neue Information braucht einen "Faden" – einen Anknüpfu
 - Bei Vorträgen: Nicht mitschreiben, was der Redner sagt. Sondern: Was fällt mir dazu ein? Welche Erfahrung habe ich damit?
 - Beim Lesen: Am Rand notieren: *"Das erinnert mich an..."* *"Das widerspricht dem, was ich über X weiß..."*
 - Bei neuen Begriffen: Sofort eine Eselsbrücke zu etwas Bekanntem bauen.
+                """)
+
+            with st.expander("🔤 Die ABC-Liste"):
+                st.markdown("""
+**So funktioniert's:**
+1. Schreibe die Buchstaben A bis Z untereinander auf ein Blatt
+2. Wähle ein Thema (z.B. "Tiere", "Frühling", "Mittelalter")
+3. Schreibe zu jedem Buchstaben ein Wort, das dir zum Thema einfällt
+
+**Warum das funktioniert:**
+Die ABC-Liste aktiviert dein **Vorwissen**! Dein Gehirn durchsucht automatisch alles, was du schon weißt. Das macht das Wissen "greifbar" und du kannst neues Wissen besser einordnen.
+
+**Beispiel: ABC-Liste zum Thema "Wald"**
+```
+A - Ameise, Ahorn
+B - Baum, Bär, Blätter
+C - Camping
+D - Dachs, Dunkelheit
+E - Eiche, Eichhörnchen
+F - Fuchs, Farn, Förster
+...
+```
+
+**💡 Tipp:** Du musst nicht jeden Buchstaben ausfüllen! Manche sind schwer (X, Y, Q) – das ist okay. Es geht darum, dein Gehirn zum Denken anzuregen.
+                """)
+
+            with st.expander("✨ KaWa - Kreative Wort-Assoziationen"):
+                st.markdown("""
+**KaWa = Kreatives Analograffiti mit Wort-Assoziationen**
+
+**So funktioniert's:**
+1. Schreibe ein wichtiges Wort groß in die Mitte eines Blattes
+2. Kreise jeden Buchstaben ein
+3. Finde zu jedem Buchstaben ein Wort, das mit dem Thema zu tun hat
+
+**Beispiel: KaWa zum Wort "LERNEN"**
+```
+L → Lesen, Lust, Leicht
+E → Erfolg, Entdecken
+R → Ruhe, Richtig
+N → Neugier, Neu
+E → Energie, Erinnern
+N → Nachdenken, Notizen
+```
+
+**Warum das funktioniert:**
+- Du denkst AKTIV über das Thema nach
+- Du findest eigene Verbindungen (= deine "Fäden"!)
+- Es macht Spaß und ist kreativ
+
+**💡 Tipp:** Male Bilder zu deinen Wörtern! Das Gehirn liebt Bilder.
                 """)
 
             st.divider()
@@ -469,6 +553,7 @@ Der Psychologe Robert Bjork nennt das "desirable difficulties". Bestimmte Schwie
 | 🗺️ Mind Mapping | 🟡 MITTEL | Farrand 2002, Nesbit 2006 | Bunte Bilder malen |
 | 🍅 Pomodoro | 🟡 MITTEL | Cirillo 2006 | 10-15 Min + Pause |
 | 👥 Lehren | 🟢 HOCH | Dunlosky 2013, Fiorella 2013 | Geschwister-Schule |
+| 🧵 Birkenbihl (ABC, KaWa) | 🟡 MITTEL | Birkenbihl 2000, Vorwissen-Aktivierung | ABC-Liste malen |
 
 💡 **Zur Einordnung:**
 - 🟢 HOCH = Mehrere hochwertige Studien bestätigen die Wirksamkeit
@@ -504,7 +589,7 @@ Der Psychologe Robert Bjork nennt das "desirable difficulties". Bestimmte Schwie
 - Die Wissenschaft: Was WIRKLICH funktioniert (mit Zahlen!)
 - Die 7 Power-Techniken (speziell für dich angepasst)
 - Transfer: Das Geheimnis der Überflieger
-- Birkenbihl-Methode: Der Faden-Trick
+- Birkenbihl-Methoden: Faden-Trick, ABC-Liste, KaWa
 - Das Paradox: Warum sich gutes Lernen schlecht anfühlt
                 """)
 
@@ -720,15 +805,12 @@ Das ist die Frage aller Fragen. Und die Antwort ist: **TRANSFER**. Transfer bede
             st.divider()
 
             # ========== 5. BIRKENBIHL ==========
-            st.markdown("### 5. 🧵 Birkenbihl-Methode: Der Faden-Trick")
+            st.markdown("### 5. 🧵 Birkenbihl-Methoden: Gehirn-gerechtes Lernen")
+            st.markdown("*Vera F. Birkenbihl war eine deutsche Lernexpertin, die gezeigt hat, wie man mit dem Gehirn arbeitet – nicht dagegen.*")
 
-            with st.expander("Schreib auf, was DU denkst!"):
+            with st.expander("🧶 Der Faden-Trick"):
                 st.markdown("""
 *"Schreib nicht auf, was ich sage. Schreib auf, was DU denkst!"*
-
-Vera F. Birkenbihl war eine deutsche Lernexpertin und hat etwas Radikales behauptet: Die Art, wie die Schule dir Notizen-Machen beigebracht hat, ist falsch.
-
-**Das "Faden"-Prinzip:**
 
 Birkenbihl sagt: Jede neue Information braucht einen "Faden" – einen Anknüpfungspunkt in deinem bestehenden Wissen. Ohne Faden geht Information *"hier rein, da raus"*. Mit Faden bleibt sie hängen.
 
@@ -738,6 +820,57 @@ Birkenbihl sagt: Jede neue Information braucht einen "Faden" – einen Anknüpfu
 - Bei Vorträgen: Nicht mitschreiben, was der Redner sagt. Sondern: Was fällt mir dazu ein? Welche Erfahrung habe ich damit?
 - Beim Lesen: Am Rand notieren: *"Das erinnert mich an..."* *"Das widerspricht dem, was ich über X weiß..."*
 - Bei neuen Begriffen: Sofort eine Eselsbrücke zu etwas Bekanntem bauen.
+                """)
+
+            with st.expander("🔤 Die ABC-Liste"):
+                st.markdown("""
+**So funktioniert's:**
+1. Schreibe die Buchstaben A bis Z untereinander auf ein Blatt
+2. Wähle ein Thema (z.B. "Tiere", "Frühling", "Mittelalter")
+3. Schreibe zu jedem Buchstaben ein Wort, das dir zum Thema einfällt
+
+**Warum das funktioniert:**
+Die ABC-Liste aktiviert dein **Vorwissen**! Dein Gehirn durchsucht automatisch alles, was du schon weißt. Das macht das Wissen "greifbar" und du kannst neues Wissen besser einordnen.
+
+**Beispiel: ABC-Liste zum Thema "Wald"**
+```
+A - Ameise, Ahorn
+B - Baum, Bär, Blätter
+C - Camping
+D - Dachs, Dunkelheit
+E - Eiche, Eichhörnchen
+F - Fuchs, Farn, Förster
+...
+```
+
+**💡 Tipp:** Du musst nicht jeden Buchstaben ausfüllen! Manche sind schwer (X, Y, Q) – das ist okay. Es geht darum, dein Gehirn zum Denken anzuregen.
+                """)
+
+            with st.expander("✨ KaWa - Kreative Wort-Assoziationen"):
+                st.markdown("""
+**KaWa = Kreatives Analograffiti mit Wort-Assoziationen**
+
+**So funktioniert's:**
+1. Schreibe ein wichtiges Wort groß in die Mitte eines Blattes
+2. Kreise jeden Buchstaben ein
+3. Finde zu jedem Buchstaben ein Wort, das mit dem Thema zu tun hat
+
+**Beispiel: KaWa zum Wort "LERNEN"**
+```
+L → Lesen, Lust, Leicht
+E → Erfolg, Entdecken
+R → Ruhe, Richtig
+N → Neugier, Neu
+E → Energie, Erinnern
+N → Nachdenken, Notizen
+```
+
+**Warum das funktioniert:**
+- Du denkst AKTIV über das Thema nach
+- Du findest eigene Verbindungen (= deine "Fäden"!)
+- Es macht Spaß und ist kreativ
+
+**💡 Tipp:** Male Bilder zu deinen Wörtern! Das Gehirn liebt Bilder.
                 """)
 
             st.divider()
@@ -790,6 +923,7 @@ Der Psychologe Robert Bjork nennt das "desirable difficulties". Bestimmte Schwie
 | 🗺️ Mind Mapping | 🟡 MITTEL | Farrand 2002, Nesbit 2006 | Themen-Mindmap |
 | 🍅 Pomodoro | 🟡 MITTEL | Cirillo 2006 | 25 + 5 |
 | 👥 Lehren | 🟢 HOCH | Dunlosky 2013, Fiorella 2013 | Lerngruppen |
+| 🧵 Birkenbihl (ABC, KaWa) | 🟡 MITTEL | Birkenbihl 2000, Vorwissen-Aktivierung | KaWa zu Vokabeln |
 
 💡 **Zur Einordnung:**
 - 🟢 HOCH = Mehrere hochwertige Studien bestätigen die Wirksamkeit
@@ -825,7 +959,7 @@ Der Psychologe Robert Bjork nennt das "desirable difficulties". Bestimmte Schwie
 - Die Wissenschaft: Was WIRKLICH funktioniert (mit Zahlen!)
 - Die 7 Power-Techniken (speziell für dich angepasst)
 - Transfer: Das Geheimnis der Überflieger
-- Birkenbihl-Methode: Der Faden-Trick
+- Birkenbihl-Methoden: Faden-Trick, ABC-Liste, KaWa
 - Das Paradox: Warum sich gutes Lernen schlecht anfühlt
                 """)
 
@@ -1040,15 +1174,12 @@ Das ist die Frage aller Fragen. Und die Antwort ist: **TRANSFER**. Transfer bede
             st.divider()
 
             # ========== 5. BIRKENBIHL ==========
-            st.markdown("### 5. 🧵 Birkenbihl-Methode: Der Faden-Trick")
+            st.markdown("### 5. 🧵 Birkenbihl-Methoden: Gehirn-gerechtes Lernen")
+            st.markdown("*Vera F. Birkenbihl war eine deutsche Lernexpertin, die gezeigt hat, wie man mit dem Gehirn arbeitet – nicht dagegen.*")
 
-            with st.expander("Schreib auf, was DU denkst!"):
+            with st.expander("🧶 Der Faden-Trick"):
                 st.markdown("""
 *"Schreib nicht auf, was ich sage. Schreib auf, was DU denkst!"*
-
-Vera F. Birkenbihl war eine deutsche Lernexpertin und hat etwas Radikales behauptet: Die Art, wie die Schule dir Notizen-Machen beigebracht hat, ist falsch.
-
-**Das "Faden"-Prinzip:**
 
 Birkenbihl sagt: Jede neue Information braucht einen "Faden" – einen Anknüpfungspunkt in deinem bestehenden Wissen. Ohne Faden geht Information *"hier rein, da raus"*. Mit Faden bleibt sie hängen.
 
@@ -1058,6 +1189,57 @@ Birkenbihl sagt: Jede neue Information braucht einen "Faden" – einen Anknüpfu
 - Bei Vorträgen: Nicht mitschreiben, was der Redner sagt. Sondern: Was fällt mir dazu ein? Welche Erfahrung habe ich damit?
 - Beim Lesen: Am Rand notieren: *"Das erinnert mich an..."* *"Das widerspricht dem, was ich über X weiß..."*
 - Bei neuen Begriffen: Sofort eine Eselsbrücke zu etwas Bekanntem bauen.
+                """)
+
+            with st.expander("🔤 Die ABC-Liste"):
+                st.markdown("""
+**So funktioniert's:**
+1. Schreibe die Buchstaben A bis Z untereinander auf ein Blatt
+2. Wähle ein Thema (z.B. "Tiere", "Frühling", "Mittelalter")
+3. Schreibe zu jedem Buchstaben ein Wort, das dir zum Thema einfällt
+
+**Warum das funktioniert:**
+Die ABC-Liste aktiviert dein **Vorwissen**! Dein Gehirn durchsucht automatisch alles, was du schon weißt. Das macht das Wissen "greifbar" und du kannst neues Wissen besser einordnen.
+
+**Beispiel: ABC-Liste zum Thema "Wald"**
+```
+A - Ameise, Ahorn
+B - Baum, Bär, Blätter
+C - Camping
+D - Dachs, Dunkelheit
+E - Eiche, Eichhörnchen
+F - Fuchs, Farn, Förster
+...
+```
+
+**💡 Tipp:** Du musst nicht jeden Buchstaben ausfüllen! Manche sind schwer (X, Y, Q) – das ist okay. Es geht darum, dein Gehirn zum Denken anzuregen.
+                """)
+
+            with st.expander("✨ KaWa - Kreative Wort-Assoziationen"):
+                st.markdown("""
+**KaWa = Kreatives Analograffiti mit Wort-Assoziationen**
+
+**So funktioniert's:**
+1. Schreibe ein wichtiges Wort groß in die Mitte eines Blattes
+2. Kreise jeden Buchstaben ein
+3. Finde zu jedem Buchstaben ein Wort, das mit dem Thema zu tun hat
+
+**Beispiel: KaWa zum Wort "LERNEN"**
+```
+L → Lesen, Lust, Leicht
+E → Erfolg, Entdecken
+R → Ruhe, Richtig
+N → Neugier, Neu
+E → Energie, Erinnern
+N → Nachdenken, Notizen
+```
+
+**Warum das funktioniert:**
+- Du denkst AKTIV über das Thema nach
+- Du findest eigene Verbindungen (= deine "Fäden"!)
+- Es macht Spaß und ist kreativ
+
+**💡 Tipp:** Male Bilder zu deinen Wörtern! Das Gehirn liebt Bilder.
                 """)
 
             st.divider()
@@ -1110,6 +1292,7 @@ Der Psychologe Robert Bjork nennt das "desirable difficulties". Bestimmte Schwie
 | 🗺️ Mind Mapping | 🟡 MITTEL | Farrand 2002, Nesbit 2006 | Struktur-Mindmap |
 | 🍅 Pomodoro | 🟡 MITTEL | Cirillo 2006 | Protokoll führen |
 | 👥 Lehren | 🟢 HOCH | Dunlosky 2013, Fiorella 2013 | Erklärvideo-Methode |
+| 🧵 Birkenbihl (ABC, KaWa) | 🟡 MITTEL | Birkenbihl 2000, Vorwissen-Aktivierung | ABC-Liste vor Tests |
 
 💡 **Zur Einordnung:**
 - 🟢 HOCH = Mehrere hochwertige Studien bestätigen die Wirksamkeit
@@ -1145,7 +1328,7 @@ Der Psychologe Robert Bjork nennt das "desirable difficulties". Bestimmte Schwie
 - Die Wissenschaft: Was WIRKLICH funktioniert (mit Zahlen!)
 - Die 7 Power-Techniken (speziell für dich angepasst)
 - Transfer: Das Geheimnis der Überflieger
-- Birkenbihl-Methode: Der Faden-Trick
+- Birkenbihl-Methoden: Faden-Trick, ABC-Liste, KaWa
 - Das Paradox: Warum sich gutes Lernen schlecht anfühlt
                 """)
 
@@ -1356,15 +1539,12 @@ Das ist die Frage aller Fragen. Und die Antwort ist: **TRANSFER**. Transfer bede
             st.divider()
 
             # ========== 5. BIRKENBIHL ==========
-            st.markdown("### 5. 🧵 Birkenbihl-Methode: Der Faden-Trick")
+            st.markdown("### 5. 🧵 Birkenbihl-Methoden: Gehirn-gerechtes Lernen")
+            st.markdown("*Vera F. Birkenbihl war eine deutsche Lernexpertin, die gezeigt hat, wie man mit dem Gehirn arbeitet – nicht dagegen.*")
 
-            with st.expander("Schreib auf, was DU denkst!"):
+            with st.expander("🧶 Der Faden-Trick"):
                 st.markdown("""
 *"Schreib nicht auf, was ich sage. Schreib auf, was DU denkst!"*
-
-Vera F. Birkenbihl war eine deutsche Lernexpertin und hat etwas Radikales behauptet: Die Art, wie die Schule dir Notizen-Machen beigebracht hat, ist falsch.
-
-**Das "Faden"-Prinzip:**
 
 Birkenbihl sagt: Jede neue Information braucht einen "Faden" – einen Anknüpfungspunkt in deinem bestehenden Wissen. Ohne Faden geht Information *"hier rein, da raus"*. Mit Faden bleibt sie hängen.
 
@@ -1374,6 +1554,57 @@ Birkenbihl sagt: Jede neue Information braucht einen "Faden" – einen Anknüpfu
 - Bei Vorträgen: Nicht mitschreiben, was der Redner sagt. Sondern: Was fällt mir dazu ein? Welche Erfahrung habe ich damit?
 - Beim Lesen: Am Rand notieren: *"Das erinnert mich an..."* *"Das widerspricht dem, was ich über X weiß..."*
 - Bei neuen Begriffen: Sofort eine Eselsbrücke zu etwas Bekanntem bauen.
+                """)
+
+            with st.expander("🔤 Die ABC-Liste"):
+                st.markdown("""
+**So funktioniert's:**
+1. Schreibe die Buchstaben A bis Z untereinander auf ein Blatt
+2. Wähle ein Thema (z.B. "Tiere", "Frühling", "Mittelalter")
+3. Schreibe zu jedem Buchstaben ein Wort, das dir zum Thema einfällt
+
+**Warum das funktioniert:**
+Die ABC-Liste aktiviert dein **Vorwissen**! Dein Gehirn durchsucht automatisch alles, was du schon weißt. Das macht das Wissen "greifbar" und du kannst neues Wissen besser einordnen.
+
+**Beispiel: ABC-Liste zum Thema "Wald"**
+```
+A - Ameise, Ahorn
+B - Baum, Bär, Blätter
+C - Camping
+D - Dachs, Dunkelheit
+E - Eiche, Eichhörnchen
+F - Fuchs, Farn, Förster
+...
+```
+
+**💡 Tipp:** Du musst nicht jeden Buchstaben ausfüllen! Manche sind schwer (X, Y, Q) – das ist okay. Es geht darum, dein Gehirn zum Denken anzuregen.
+                """)
+
+            with st.expander("✨ KaWa - Kreative Wort-Assoziationen"):
+                st.markdown("""
+**KaWa = Kreatives Analograffiti mit Wort-Assoziationen**
+
+**So funktioniert's:**
+1. Schreibe ein wichtiges Wort groß in die Mitte eines Blattes
+2. Kreise jeden Buchstaben ein
+3. Finde zu jedem Buchstaben ein Wort, das mit dem Thema zu tun hat
+
+**Beispiel: KaWa zum Wort "LERNEN"**
+```
+L → Lesen, Lust, Leicht
+E → Erfolg, Entdecken
+R → Ruhe, Richtig
+N → Neugier, Neu
+E → Energie, Erinnern
+N → Nachdenken, Notizen
+```
+
+**Warum das funktioniert:**
+- Du denkst AKTIV über das Thema nach
+- Du findest eigene Verbindungen (= deine "Fäden"!)
+- Es macht Spaß und ist kreativ
+
+**💡 Tipp:** Male Bilder zu deinen Wörtern! Das Gehirn liebt Bilder.
                 """)
 
             st.divider()
@@ -1426,6 +1657,7 @@ Der Psychologe Robert Bjork nennt das "desirable difficulties". Bestimmte Schwie
 | 🗺️ Mind Mapping | 🟡 MITTEL | Farrand 2002, Nesbit 2006 | Prüfungs-Mindmap |
 | 🍅 Pomodoro | 🟡 MITTEL | Cirillo 2006 | Mit Techniken kombinieren |
 | 👥 Lehren | 🟢 HOCH | Dunlosky 2013, Fiorella 2013 | Nachhilfe geben |
+| 🧵 Birkenbihl (ABC, KaWa) | 🟡 MITTEL | Birkenbihl 2000, Vorwissen-Aktivierung | KaWa für Klausurthemen |
 
 💡 **Zur Einordnung:**
 - 🟢 HOCH = Mehrere hochwertige Studien bestätigen die Wirksamkeit
