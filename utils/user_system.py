@@ -320,25 +320,35 @@ def logout_user():
 # UI COMPONENTS
 # ============================================
 
-def render_user_login(show_stats: bool = True):
+def render_user_login(show_stats: bool = True, show_info_bar: bool = True):
     """
     Rendert die Benutzer-Login-Komponente.
 
     Args:
         show_stats: Wenn True, zeigt XP und Level an
+        show_info_bar: Wenn True, zeigt die User-Info-Bar an (kann separat mit render_user_info_bar gezeigt werden)
     """
     init_user_tables()
 
     if is_logged_in():
         user = get_current_user()
         if user:
-            render_logged_in_view(user, show_stats)
+            if show_info_bar:
+                render_logged_in_view(user, show_stats)
         else:
             # User nicht gefunden, ausloggen
             logout_user()
             render_login_form()
     else:
         render_login_form()
+
+
+def render_user_info_bar():
+    """Rendert NUR die User-Info-Bar (Name, Level, XP) - für flexible Platzierung."""
+    if is_logged_in():
+        user = get_current_user()
+        if user:
+            render_logged_in_view(user, show_stats=True)
 
 def render_login_form():
     """Rendert das mehrstufige Login-Formular mit Altersstufe und Avatar-Auswahl."""

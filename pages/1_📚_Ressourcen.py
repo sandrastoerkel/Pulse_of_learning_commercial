@@ -56,7 +56,7 @@ except ImportError:
 # ============================================
 
 try:
-    from utils.user_system import render_user_login, is_logged_in, get_current_user
+    from utils.user_system import render_user_login, render_user_info_bar, is_logged_in, get_current_user
     HAS_GAMIFICATION = True
 except ImportError:
     HAS_GAMIFICATION = False
@@ -70,7 +70,8 @@ except ImportError:
 # ============================================
 
 if HAS_GAMIFICATION:
-    render_user_login()
+    # Nur Login-Formular zeigen wenn nicht eingeloggt (Info-Bar kommt später)
+    render_user_login(show_info_bar=False)
 
     # Nur fortfahren wenn eingeloggt
     if not is_logged_in():
@@ -94,7 +95,7 @@ factor = st.session_state.selected_factor
 
 st.markdown("### 📚 Wähle einen Bereich:")
 
-# Kacheln in einer Reihe
+# Kacheln in einer Reihe - direkt klickbar
 cols = st.columns(len(CONTENT_DATABASE))
 for idx, (key, val) in enumerate(CONTENT_DATABASE.items()):
     with cols[idx]:
@@ -103,31 +104,28 @@ for idx, (key, val) in enumerate(CONTENT_DATABASE.items()):
         btn_color = val.get('color', '#667eea')
         is_selected = (key == factor)
 
-        # Kachel als Button mit farbigem Hintergrund wenn ausgewählt
+        # Button mit Kachel-Styling (direkt klickbar)
         if is_selected:
+            # Ausgewählte Kachel - farbig, nicht klickbar
             st.markdown(f"""
-            <div style="background: {btn_color}; color: white; padding: 15px 10px;
-                        border-radius: 12px; text-align: center; margin-bottom: 5px;">
+            <div style="background: {btn_color}; color: white; padding: 20px 10px;
+                        border-radius: 12px; text-align: center; cursor: default;">
                 <div style="font-size: 1.8em;">{btn_icon}</div>
-                <div style="font-size: 0.9em; font-weight: bold;">{btn_name}</div>
+                <div style="font-size: 0.85em; font-weight: bold; margin-top: 5px;">{btn_name}</div>
             </div>
             """, unsafe_allow_html=True)
         else:
-            st.markdown(f"""
-            <div style="background: #f0f2f6; color: #333; padding: 15px 10px;
-                        border-radius: 12px; text-align: center; margin-bottom: 5px;
-                        border: 2px solid transparent;">
-                <div style="font-size: 1.8em;">{btn_icon}</div>
-                <div style="font-size: 0.9em;">{btn_name}</div>
-            </div>
-            """, unsafe_allow_html=True)
-
-        if st.button("Auswählen" if not is_selected else "✓ Aktiv", key=f"tile_{key}",
-                     use_container_width=True, disabled=is_selected):
-            st.session_state.selected_factor = key
-            st.rerun()
+            # Nicht ausgewählt - als Button
+            if st.button(f"{btn_icon}\n{btn_name}", key=f"tile_{key}", use_container_width=True):
+                st.session_state.selected_factor = key
+                st.rerun()
 
 st.divider()
+
+# User-Info-Bar UNTER der Bereichsauswahl
+if HAS_GAMIFICATION:
+    render_user_info_bar()
+
 # END KACHEL-NAVIGATION
 
 # ============================================
