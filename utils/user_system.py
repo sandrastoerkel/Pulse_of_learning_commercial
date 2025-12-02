@@ -579,13 +579,22 @@ def start_preview_mode(age_group: str = "unterstufe"):
             WHERE user_id = ?
         """, (age_group, datetime.now().isoformat(), PREVIEW_USER_ID))
     else:
-        # Neuen Preview-User erstellen
-        c.execute("""
-            INSERT INTO users (user_id, display_name, age_group, avatar_style, level, xp_total,
-                             current_streak, longest_streak, created_at, updated_at)
-            VALUES (?, ?, ?, ?, 1, 0, 0, 0, ?, ?)
-        """, (PREVIEW_USER_ID, PREVIEW_USER_NAME, age_group, "thumbs",
-              datetime.now().isoformat(), datetime.now().isoformat()))
+        # Neuen Preview-User erstellen (ohne avatar_style, falls Spalte nicht existiert)
+        try:
+            c.execute("""
+                INSERT INTO users (user_id, display_name, age_group, avatar_style, level, xp_total,
+                                 current_streak, longest_streak, created_at, updated_at)
+                VALUES (?, ?, ?, ?, 1, 0, 0, 0, ?, ?)
+            """, (PREVIEW_USER_ID, PREVIEW_USER_NAME, age_group, "thumbs",
+                  datetime.now().isoformat(), datetime.now().isoformat()))
+        except sqlite3.OperationalError:
+            # Fallback ohne avatar_style
+            c.execute("""
+                INSERT INTO users (user_id, display_name, age_group, level, xp_total,
+                                 current_streak, longest_streak, created_at, updated_at)
+                VALUES (?, ?, ?, 1, 0, 0, 0, ?, ?)
+            """, (PREVIEW_USER_ID, PREVIEW_USER_NAME, age_group,
+                  datetime.now().isoformat(), datetime.now().isoformat()))
 
     conn.commit()
     conn.close()
