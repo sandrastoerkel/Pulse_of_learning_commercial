@@ -654,8 +654,8 @@ CONTENT_DATABASE = {
     # RANG 6: MOTIVATION (d = 0.48)
     # ============================================
     "EXT_MOTIV": {
-        "name_de": "Wieder Bock aufs Lernen (Motivation)",
-        "name_schueler": "Wieder Bock aufs Lernen",
+        "name_de": "Was dich antreibt (Motivation)",
+        "name_schueler": "Was dich antreibt",
         "icon": "🔥",
         "color": "#e74c3c",
 
