@@ -35,12 +35,6 @@ def render_matheff_altersstufen(color: str):
             st.markdown("""
             Trainiere deine Selbstwirksamkeit durch **realistische Selbsteinschätzung** –
             basierend auf John Hattie's Forschung zu "Student Expectations" (d = 1.33).
-
-            **So funktioniert's:**
-            1. Wähle ein Fach und beschreibe deine Aufgabe
-            2. Schätze ehrlich: Wie viele Punkte wirst du schaffen?
-            3. Mach die Aufgabe und trag dein echtes Ergebnis ein
-            4. Sammle XP und Badges!
             """)
 
         with col2:
