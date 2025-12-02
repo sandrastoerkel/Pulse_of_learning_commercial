@@ -18,14 +18,30 @@ except ImportError:
 def render_matheff_altersstufen(color: str):
     """Rendert die Selbstwirksamkeits-Ressource mit Challenges + Theorie-Buttons"""
 
-    # Session State für Tab-Auswahl
+    # Session State für Tab-Auswahl (Default: Theorie zuerst)
     if "matheff_tab" not in st.session_state:
-        st.session_state.matheff_tab = "challenges"
+        st.session_state.matheff_tab = "theorie"
 
-    # Große auffällige Auswahl-Buttons
+    # Große auffällige Auswahl-Buttons (Theorie zuerst, dann Challenges)
     col1, col2 = st.columns(2)
 
     with col1:
+        is_theorie = st.session_state.matheff_tab == "theorie"
+        if is_theorie:
+            st.markdown(f"""
+            <div style="background: {color}; color: white; padding: 20px; border-radius: 12px;
+                        text-align: center; cursor: default;">
+                <div style="font-size: 2em;">▶️</div>
+                <div style="font-size: 1.2em; font-weight: bold;">Tutorial</div>
+                <div style="font-size: 0.85em; opacity: 0.9;">Videos & Erklärungen</div>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            if st.button("▶️\nTutorial\nVideos & Erklärungen", key="btn_theorie", use_container_width=True):
+                st.session_state.matheff_tab = "theorie"
+                st.rerun()
+
+    with col2:
         is_challenges = st.session_state.matheff_tab == "challenges"
         if is_challenges:
             st.markdown(f"""
@@ -41,28 +57,34 @@ def render_matheff_altersstufen(color: str):
                 st.session_state.matheff_tab = "challenges"
                 st.rerun()
 
-    with col2:
-        is_theorie = st.session_state.matheff_tab == "theorie"
-        if is_theorie:
-            st.markdown(f"""
-            <div style="background: {color}; color: white; padding: 20px; border-radius: 12px;
-                        text-align: center; cursor: default;">
-                <div style="font-size: 2em;">📚</div>
-                <div style="font-size: 1.2em; font-weight: bold;">Theorie dahinter</div>
-                <div style="font-size: 0.85em; opacity: 0.9;">Wissenschaftlicher Hintergrund</div>
-            </div>
-            """, unsafe_allow_html=True)
-        else:
-            if st.button("📚\nTheorie dahinter\nWissenschaftlicher Hintergrund", key="btn_theorie", use_container_width=True):
-                st.session_state.matheff_tab = "theorie"
-                st.rerun()
-
     st.divider()
 
     # ==========================================
-    # CHALLENGES-Bereich
+    # THEORIE-Bereich (kommt zuerst)
     # ==========================================
-    if st.session_state.matheff_tab == "challenges":
+    if st.session_state.matheff_tab == "theorie":
+        # Altersstufe aus User-Profil holen (oben gewählt)
+        age_group = st.session_state.get("current_user_age_group", "unterstufe")
+
+        # Content basierend auf User-Altersstufe anzeigen
+        if age_group == "grundschule":
+            _render_grundschule_content()
+        elif age_group == "unterstufe":
+            _render_unterstufe_content()
+        elif age_group == "mittelstufe":
+            _render_mittelstufe_content()
+        elif age_group == "oberstufe":
+            _render_oberstufe_content()
+        elif age_group == "paedagogen":
+            _render_paedagogen_content()
+        else:
+            # Fallback
+            _render_unterstufe_content()
+
+    # ==========================================
+    # CHALLENGES-Bereich (kommt nach Theorie)
+    # ==========================================
+    else:
         # Gamification Widgets einbinden
         if HAS_GAMIFICATION:
             # Bandura-Challenge
@@ -127,81 +149,6 @@ def render_matheff_altersstufen(color: str):
                 **Ziel:** Alle 4 Quellen jeden Tag mindestens einmal aktivieren!
                 """)
 
-    # ==========================================
-    # THEORIE-Bereich
-    # ==========================================
-    else:
-        # Altersstufen-Auswahl als Buttons
-        st.markdown("### Wähle deine Altersstufe:")
-
-        col1, col2, col3, col4, col5 = st.columns(5)
-
-        # Session State für Altersstufe initialisieren
-        if "selected_age_group" not in st.session_state:
-            st.session_state.selected_age_group = "grundschule"
-
-        with col1:
-            if st.button("🎒 Grundschule\n(1-4)", key="btn_gs", use_container_width=True,
-                        type="primary" if st.session_state.selected_age_group == "grundschule" else "secondary"):
-                st.session_state.selected_age_group = "grundschule"
-                st.rerun()
-
-        with col2:
-            if st.button("📚 Unterstufe\n(5-7)", key="btn_us", use_container_width=True,
-                        type="primary" if st.session_state.selected_age_group == "unterstufe" else "secondary"):
-                st.session_state.selected_age_group = "unterstufe"
-                st.rerun()
-
-        with col3:
-            if st.button("🎯 Mittelstufe\n(8-10)", key="btn_ms", use_container_width=True,
-                        type="primary" if st.session_state.selected_age_group == "mittelstufe" else "secondary"):
-                st.session_state.selected_age_group = "mittelstufe"
-                st.rerun()
-
-        with col4:
-            if st.button("🎓 Oberstufe\n(11-13)", key="btn_os", use_container_width=True,
-                        type="primary" if st.session_state.selected_age_group == "oberstufe" else "secondary"):
-                st.session_state.selected_age_group = "oberstufe"
-                st.rerun()
-
-        with col5:
-            if st.button("👩‍🏫 Pädagogen", key="btn_ped", use_container_width=True,
-                        type="primary" if st.session_state.selected_age_group == "paedagogen" else "secondary"):
-                st.session_state.selected_age_group = "paedagogen"
-                st.rerun()
-
-        st.divider()
-
-        # ==========================================
-        # GRUNDSCHULE CONTENT
-        # ==========================================
-        if st.session_state.selected_age_group == "grundschule":
-            _render_grundschule_content()
-
-        # ==========================================
-        # UNTERSTUFE CONTENT
-        # ==========================================
-        elif st.session_state.selected_age_group == "unterstufe":
-            _render_unterstufe_content()
-
-        # ==========================================
-        # MITTELSTUFE CONTENT
-        # ==========================================
-        elif st.session_state.selected_age_group == "mittelstufe":
-            _render_mittelstufe_content()
-
-        # ==========================================
-        # OBERSTUFE CONTENT
-        # ==========================================
-        elif st.session_state.selected_age_group == "oberstufe":
-            _render_oberstufe_content()
-
-        # ==========================================
-        # PÄDAGOGEN CONTENT
-        # ==========================================
-        elif st.session_state.selected_age_group == "paedagogen":
-            _render_paedagogen_content()
-
     # Zusammenfassungs-Box am Ende
     st.divider()
     st.subheader("📋 Zusammenfassung aller Altersstufen")
@@ -223,6 +170,12 @@ def render_matheff_altersstufen(color: str):
 def _render_grundschule_content():
     """Rendert den Grundschule-Content für Selbstwirksamkeit."""
     st.header("💪 Mental stark – Für kleine Helden")
+
+    # ========== VIDEO-PLATZHALTER ==========
+    st.info("🎬 **Video kommt bald!** Hier erscheint ein erklärendes Video zum Thema.")
+    # Später ersetzen mit:
+    # st.video("https://youtube.com/watch?v=DEIN_VIDEO_LINK")
+    # =======================================
 
     st.subheader("🎯 Was ist das eigentlich?")
     st.markdown("""
@@ -337,6 +290,12 @@ def _render_grundschule_content():
 def _render_unterstufe_content():
     """Rendert den Unterstufe-Content für Selbstwirksamkeit."""
     st.header("💪 Mental stark – Dein Gehirn ist trainierbar")
+
+    # ========== VIDEO-PLATZHALTER ==========
+    st.info("🎬 **Video kommt bald!** Hier erscheint ein erklärendes Video zum Thema.")
+    # Später ersetzen mit:
+    # st.video("https://youtube.com/watch?v=DEIN_VIDEO_LINK")
+    # =======================================
 
     st.subheader("🎯 Eine Entdeckung, die alles verändert")
 
@@ -461,6 +420,12 @@ def _render_unterstufe_content():
 def _render_mittelstufe_content():
     """Rendert den Mittelstufe-Content für Selbstwirksamkeit."""
     st.header("💪 Mental stark – Die Psychologie hinter deinem Erfolg")
+
+    # ========== VIDEO-PLATZHALTER ==========
+    st.info("🎬 **Video kommt bald!** Hier erscheint ein erklärendes Video zum Thema.")
+    # Später ersetzen mit:
+    # st.video("https://youtube.com/watch?v=DEIN_VIDEO_LINK")
+    # =======================================
 
     st.subheader("🎯 Warum das hier wichtig ist")
     st.markdown("""
@@ -651,6 +616,12 @@ def _render_mittelstufe_content():
 def _render_oberstufe_content():
     """Rendert den Oberstufe-Content für Selbstwirksamkeit."""
     st.header("💪 Mental stark – Selbstwirksamkeit als Meta-Kompetenz")
+
+    # ========== VIDEO-PLATZHALTER ==========
+    st.info("🎬 **Video kommt bald!** Hier erscheint ein erklärendes Video zum Thema.")
+    # Später ersetzen mit:
+    # st.video("https://youtube.com/watch?v=DEIN_VIDEO_LINK")
+    # =======================================
 
     st.subheader("🎯 Warum das jetzt relevant ist")
     st.markdown("""
@@ -859,6 +830,12 @@ def _render_oberstufe_content():
 def _render_paedagogen_content():
     """Rendert den Pädagogen-Content für Selbstwirksamkeit."""
     st.header("💪 Mental stark – Für Pädagogen")
+
+    # ========== VIDEO-PLATZHALTER ==========
+    st.info("🎬 **Video kommt bald!** Hier erscheint ein erklärendes Video zum Thema.")
+    # Später ersetzen mit:
+    # st.video("https://youtube.com/watch?v=DEIN_VIDEO_LINK")
+    # =======================================
 
     st.info("""
     🚧 **Dieser Bereich wird gerade erstellt.**

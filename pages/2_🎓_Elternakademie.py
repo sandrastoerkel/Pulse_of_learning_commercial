@@ -178,6 +178,32 @@ st.set_page_config(
 
 st.title("🎓 Elternakademie")
 
+# ============================================
+# ANKÜNDIGUNG: ELTERN-WORKSHOP
+# ============================================
+
+st.markdown("""
+<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; padding: 25px; border-radius: 15px; margin-bottom: 25px;">
+    <h3 style="margin: 0 0 15px 0;">🎉 Bald verfügbar: Eltern-Workshop „Wirksames Feedback"</h3>
+    <p style="margin: 0 0 15px 0; font-size: 1.1em;">
+        <strong>Wichtig vorab:</strong> Alles, was Sie als Eltern für Ihr Kind tun, ist prinzipiell hilfreich!
+        Sie machen bereits vieles richtig. 💪
+    </p>
+    <p style="margin: 0 0 15px 0;">
+        In diesem Workshop geht es darum, wie Sie Ihr Kind nach wissenschaftlichen Erkenntnissen
+        <em>noch gezielter</em> unterstützen können – nicht darum, etwas „falsch" gemacht zu haben.
+    </p>
+    <p style="margin: 0; opacity: 0.9;">
+        <strong>Was Sie lernen werden:</strong><br>
+        ✓ Die 4 Feedback-Typen nach Hattie (was wirkt am besten?)<br>
+        ✓ Prozess-Lob vs. Personen-Lob (kleiner Unterschied, große Wirkung)<br>
+        ✓ Konkrete Satzbausteine für den Alltag<br>
+        ✓ Wie Sie mit Ihrem Kind über Schule sprechen können
+    </p>
+</div>
+""", unsafe_allow_html=True)
+
 st.markdown("""
 ### Evidenzbasierte Erfassung elterlicher Unterstützung
 

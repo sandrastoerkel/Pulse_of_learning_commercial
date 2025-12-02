@@ -95,30 +95,70 @@ factor = st.session_state.selected_factor
 
 st.markdown("### 📚 Wähle einen Bereich:")
 
-# Kacheln in einer Reihe - direkt klickbar
-cols = st.columns(len(CONTENT_DATABASE))
-for idx, (key, val) in enumerate(CONTENT_DATABASE.items()):
-    with cols[idx]:
-        btn_icon = val.get('icon', '📚')
-        btn_name = val.get('name_schueler', key)
-        btn_color = val.get('color', '#667eea')
-        is_selected = (key == factor)
+# Items in Liste umwandeln für 2 Zeilen
+items = list(CONTENT_DATABASE.items())
+row1_items = items[:6]  # Erste 6 Items
+row2_items = items[6:]  # Rest (5 Items)
 
-        # Button mit Kachel-Styling (direkt klickbar)
-        if is_selected:
-            # Ausgewählte Kachel - farbig, nicht klickbar
-            st.markdown(f"""
-            <div style="background: {btn_color}; color: white; padding: 20px 10px;
-                        border-radius: 12px; text-align: center; cursor: default;">
-                <div style="font-size: 1.8em;">{btn_icon}</div>
-                <div style="font-size: 0.85em; font-weight: bold; margin-top: 5px;">{btn_name}</div>
-            </div>
-            """, unsafe_allow_html=True)
-        else:
-            # Nicht ausgewählt - als Button
-            if st.button(f"{btn_icon}\n{btn_name}", key=f"tile_{key}", use_container_width=True):
-                st.session_state.selected_factor = key
-                st.rerun()
+def render_tile(key, val, is_selected):
+    """Rendert eine einzelne Kachel."""
+    btn_icon = val.get('icon', '📚')
+    btn_name = val.get('name_schueler', key)
+    btn_color = val.get('color', '#667eea')
+
+    if is_selected:
+        # Ausgewählte Kachel - volle Farbe, nicht klickbar
+        st.markdown(f"""
+        <div style="background: {btn_color}; color: white; padding: 12px 8px;
+                    border-radius: 12px; text-align: center;
+                    min-height: 70px; display: flex; flex-direction: column;
+                    justify-content: center; align-items: center;
+                    box-shadow: 0 3px 10px {btn_color}55;">
+            <div style="font-size: 1.3em;">{btn_icon}</div>
+            <div style="font-size: 0.7em; font-weight: bold; margin-top: 4px;
+                        line-height: 1.2;">{btn_name}</div>
+        </div>
+        """, unsafe_allow_html=True)
+    else:
+        # Nicht ausgewählt - helle Farbe, klickbar
+        if st.button(f"{btn_icon}\n{btn_name}", key=f"tile_{key}", use_container_width=True):
+            st.session_state.selected_factor = key
+            st.rerun()
+
+# CSS für einheitliches Button-Styling
+st.markdown("""
+<style>
+/* Styling für alle Bereichs-Buttons */
+div[data-testid="stHorizontalBlock"] button[kind="secondary"] {
+    border-radius: 12px !important;
+    min-height: 70px !important;
+    padding: 10px 8px !important;
+    white-space: pre-wrap !important;
+    line-height: 1.2 !important;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+    border: 2px solid #dee2e6 !important;
+    transition: all 0.2s ease !important;
+}
+div[data-testid="stHorizontalBlock"] button[kind="secondary"]:hover {
+    background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%) !important;
+    border-color: #adb5bd !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# Erste Reihe (6 Kacheln)
+cols1 = st.columns(6)
+for idx, (key, val) in enumerate(row1_items):
+    with cols1[idx]:
+        render_tile(key, val, key == factor)
+
+# Zweite Reihe (5 Kacheln + 1 leere)
+cols2 = st.columns(6)
+for idx, (key, val) in enumerate(row2_items):
+    with cols2[idx]:
+        render_tile(key, val, key == factor)
 
 st.divider()
 

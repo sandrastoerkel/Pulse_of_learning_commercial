@@ -40,14 +40,30 @@ except ImportError:
 def render_learnstrat_altersstufen(color: str):
     """Rendert die Lernstrategien-Ressource mit Challenges + Theorie-Buttons"""
 
-    # Session State für Tab-Auswahl
+    # Session State für Tab-Auswahl (Default: Theorie zuerst)
     if "learnstrat_tab" not in st.session_state:
-        st.session_state.learnstrat_tab = "challenges"
+        st.session_state.learnstrat_tab = "theorie"
 
-    # Große auffällige Auswahl-Buttons
+    # Große auffällige Auswahl-Buttons (Theorie zuerst, dann Challenges)
     col1, col2 = st.columns(2)
 
     with col1:
+        is_theorie = st.session_state.learnstrat_tab == "theorie"
+        if is_theorie:
+            st.markdown(f"""
+            <div style="background: {color}; color: white; padding: 20px; border-radius: 12px;
+                        text-align: center; cursor: default;">
+                <div style="font-size: 2em;">▶️</div>
+                <div style="font-size: 1.2em; font-weight: bold;">Tutorial</div>
+                <div style="font-size: 0.85em; opacity: 0.9;">Videos & Erklärungen</div>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            if st.button("▶️\nTutorial\nVideos & Erklärungen", key="btn_learnstrat_theorie", use_container_width=True):
+                st.session_state.learnstrat_tab = "theorie"
+                st.rerun()
+
+    with col2:
         is_challenges = st.session_state.learnstrat_tab == "challenges"
         if is_challenges:
             st.markdown(f"""
@@ -63,26 +79,10 @@ def render_learnstrat_altersstufen(color: str):
                 st.session_state.learnstrat_tab = "challenges"
                 st.rerun()
 
-    with col2:
-        is_theorie = st.session_state.learnstrat_tab == "theorie"
-        if is_theorie:
-            st.markdown(f"""
-            <div style="background: {color}; color: white; padding: 20px; border-radius: 12px;
-                        text-align: center; cursor: default;">
-                <div style="font-size: 2em;">📚</div>
-                <div style="font-size: 1.2em; font-weight: bold;">Theorie dahinter</div>
-                <div style="font-size: 0.85em; opacity: 0.9;">Wissenschaftlicher Hintergrund</div>
-            </div>
-            """, unsafe_allow_html=True)
-        else:
-            if st.button("📚\nTheorie dahinter\nWissenschaftlicher Hintergrund", key="btn_learnstrat_theorie", use_container_width=True):
-                st.session_state.learnstrat_tab = "theorie"
-                st.rerun()
-
     st.divider()
 
     # ==========================================
-    # CHALLENGES-Bereich
+    # CHALLENGES-Bereich (kommt nach Theorie)
     # ==========================================
     if st.session_state.learnstrat_tab == "challenges":
         if HAS_LEARNSTRAT and HAS_GAMIFICATION and is_logged_in():
@@ -195,55 +195,24 @@ def render_learnstrat_altersstufen(color: str):
             """)
 
     # ==========================================
-    # THEORIE-Bereich
+    # THEORIE-Bereich (kommt zuerst - Default)
     # ==========================================
     else:
-        # Altersstufen-Auswahl als Buttons
-        st.markdown("### Wähle deine Altersstufe:")
-
-        col1, col2, col3, col4, col5 = st.columns(5)
-
-        # Session State für Altersstufe initialisieren (separater Key für Learnstrat)
-        if "selected_age_group_learnstrat" not in st.session_state:
-            st.session_state.selected_age_group_learnstrat = "grundschule"
-
-        with col1:
-            if st.button("🎒 Grundschule\n(1-4)", key="btn_ls_gs", use_container_width=True,
-                        type="primary" if st.session_state.selected_age_group_learnstrat == "grundschule" else "secondary"):
-                st.session_state.selected_age_group_learnstrat = "grundschule"
-                st.rerun()
-
-        with col2:
-            if st.button("📚 Unterstufe\n(5-7)", key="btn_ls_us", use_container_width=True,
-                        type="primary" if st.session_state.selected_age_group_learnstrat == "unterstufe" else "secondary"):
-                st.session_state.selected_age_group_learnstrat = "unterstufe"
-                st.rerun()
-
-        with col3:
-            if st.button("🎯 Mittelstufe\n(8-10)", key="btn_ls_ms", use_container_width=True,
-                        type="primary" if st.session_state.selected_age_group_learnstrat == "mittelstufe" else "secondary"):
-                st.session_state.selected_age_group_learnstrat = "mittelstufe"
-                st.rerun()
-
-        with col4:
-            if st.button("🎓 Oberstufe\n(11-13)", key="btn_ls_os", use_container_width=True,
-                        type="primary" if st.session_state.selected_age_group_learnstrat == "oberstufe" else "secondary"):
-                st.session_state.selected_age_group_learnstrat = "oberstufe"
-                st.rerun()
-
-        with col5:
-            if st.button("👩‍🏫 Pädagogen", key="btn_ls_ped", use_container_width=True,
-                        type="primary" if st.session_state.selected_age_group_learnstrat == "paedagogen" else "secondary"):
-                st.session_state.selected_age_group_learnstrat = "paedagogen"
-                st.rerun()
-
-        st.divider()
+        # Altersstufe aus User-Profil holen (oben gewählt)
+        age_group = st.session_state.get("current_user_age_group", "unterstufe")
 
         # ==========================================
         # GRUNDSCHULE CONTENT (Original MaiThink-Style)
         # ==========================================
-        if st.session_state.selected_age_group_learnstrat == "grundschule":
+        if age_group == "grundschule":
             st.header("🧠 CLEVERER LERNEN")
+
+            # ========== VIDEO-PLATZHALTER ==========
+            st.info("🎬 **Video kommt bald!** Hier erscheint ein erklärendes Video zum Thema.")
+            # Später ersetzen mit:
+            # st.video("https://youtube.com/watch?v=DEIN_VIDEO_LINK")
+            # =======================================
+
             st.markdown("**Die Wissenschaft sagt: Du machst es falsch. Aber keine Sorge – wir fixen das jetzt.**")
 
             # ========== PLOT TWIST INTRO ==========
@@ -273,7 +242,7 @@ def render_learnstrat_altersstufen(color: str):
             st.divider()
 
             # ========== 1. DAS PROBLEM ==========
-            st.markdown("### 1. 🚫 Das Problem: Die Schule hat's verbockt")
+            st.markdown("### 1. 🤫 Das wissen sogar die meisten Erwachsenen nicht")
 
             st.markdown("""
             *"Schreib das auf, dann merkst du's dir!"*
@@ -611,8 +580,15 @@ Der Psychologe Robert Bjork nennt das "desirable difficulties". Bestimmte Schwie
         # ==========================================
         # UNTERSTUFE CONTENT (Original MaiThink-Style)
         # ==========================================
-        elif st.session_state.selected_age_group_learnstrat == "unterstufe":
+        elif age_group == "unterstufe":
             st.header("🧠 CLEVERER LERNEN")
+
+            # ========== VIDEO-PLATZHALTER ==========
+            st.info("🎬 **Video kommt bald!** Hier erscheint ein erklärendes Video zum Thema.")
+            # Später ersetzen mit:
+            # st.video("https://youtube.com/watch?v=DEIN_VIDEO_LINK")
+            # =======================================
+
             st.markdown("**Die Wissenschaft sagt: Du machst es falsch. Aber keine Sorge – wir fixen das jetzt.**")
 
             # ========== PLOT TWIST INTRO ==========
@@ -981,8 +957,15 @@ Der Psychologe Robert Bjork nennt das "desirable difficulties". Bestimmte Schwie
         # ==========================================
         # MITTELSTUFE CONTENT (Original MaiThink-Style)
         # ==========================================
-        elif st.session_state.selected_age_group_learnstrat == "mittelstufe":
+        elif age_group == "mittelstufe":
             st.header("🧠 CLEVERER LERNEN")
+
+            # ========== VIDEO-PLATZHALTER ==========
+            st.info("🎬 **Video kommt bald!** Hier erscheint ein erklärendes Video zum Thema.")
+            # Später ersetzen mit:
+            # st.video("https://youtube.com/watch?v=DEIN_VIDEO_LINK")
+            # =======================================
+
             st.markdown("**Die Wissenschaft sagt: Du machst es falsch. Aber keine Sorge – wir fixen das jetzt.**")
 
             # ========== PLOT TWIST INTRO ==========
@@ -1350,8 +1333,15 @@ Der Psychologe Robert Bjork nennt das "desirable difficulties". Bestimmte Schwie
         # ==========================================
         # OBERSTUFE CONTENT (Original MaiThink-Style)
         # ==========================================
-        elif st.session_state.selected_age_group_learnstrat == "oberstufe":
+        elif age_group == "oberstufe":
             st.header("🧠 CLEVERER LERNEN")
+
+            # ========== VIDEO-PLATZHALTER ==========
+            st.info("🎬 **Video kommt bald!** Hier erscheint ein erklärendes Video zum Thema.")
+            # Später ersetzen mit:
+            # st.video("https://youtube.com/watch?v=DEIN_VIDEO_LINK")
+            # =======================================
+
             st.markdown("**Die Wissenschaft sagt: Du machst es falsch. Aber keine Sorge – wir fixen das jetzt.**")
 
             # ========== PLOT TWIST INTRO ==========
@@ -1715,8 +1705,15 @@ Der Psychologe Robert Bjork nennt das "desirable difficulties". Bestimmte Schwie
         # ==========================================
         # PÄDAGOGEN CONTENT
         # ==========================================
-        elif st.session_state.selected_age_group_learnstrat == "paedagogen":
+        elif age_group == "paedagogen":
             st.header("📚 Pädagogische Grundlage: Cleverer Lernen")
+
+            # ========== VIDEO-PLATZHALTER ==========
+            st.info("🎬 **Video kommt bald!** Hier erscheint ein erklärendes Video zum Thema.")
+            # Später ersetzen mit:
+            # st.video("https://youtube.com/watch?v=DEIN_VIDEO_LINK")
+            # =======================================
+
             st.markdown("*Wissenschaftliche Basis für evidenzbasierte Lernstrategien*")
 
             # ========== 1. ÜBERBLICK ==========

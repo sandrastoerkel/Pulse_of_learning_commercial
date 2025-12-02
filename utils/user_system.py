@@ -645,13 +645,14 @@ def render_preview_banner():
 
     # Altersstufen-Wechsler
     st.markdown("**Altersstufe wechseln:**")
-    cols = st.columns([1, 1, 1, 1, 1, 1])
+    cols = st.columns([1, 1, 1, 1, 1, 1, 1])
 
     age_options = [
         ("grundschule", "🎒 Grundschule"),
         ("unterstufe", "📚 Unterstufe"),
         ("mittelstufe", "🎯 Mittelstufe"),
         ("oberstufe", "🎓 Oberstufe"),
+        ("paedagogen", "👩‍🏫 Pädagogen"),
     ]
 
     for idx, (age_key, age_label) in enumerate(age_options):
@@ -663,12 +664,12 @@ def render_preview_banner():
                 st.rerun()
 
     # Reset und Beenden Buttons
-    with cols[4]:
+    with cols[5]:
         if st.button("🗑️ Reset", key="preview_reset", use_container_width=True):
             reset_preview_data()
             st.rerun()
 
-    with cols[5]:
+    with cols[6]:
         if st.button("🚪 Beenden", key="preview_end", use_container_width=True):
             end_preview_mode()
             st.rerun()

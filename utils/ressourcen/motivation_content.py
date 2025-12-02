@@ -77,14 +77,30 @@ def render_motivation_altersstufen(
         )
     """
 
-    # Session State für Tab-Auswahl
+    # Session State für Tab-Auswahl (Default: Theorie zuerst)
     if "motivation_tab" not in st.session_state:
-        st.session_state.motivation_tab = "challenges"
+        st.session_state.motivation_tab = "theorie"
 
-    # Große auffällige Auswahl-Buttons
+    # Große auffällige Auswahl-Buttons (Theorie zuerst, dann Challenges)
     col1, col2 = st.columns(2)
 
     with col1:
+        is_theorie = st.session_state.motivation_tab == "theorie"
+        if is_theorie:
+            st.markdown(f"""
+            <div style="background: {color}; color: white; padding: 20px; border-radius: 12px;
+                        text-align: center; cursor: default;">
+                <div style="font-size: 2em;">▶️</div>
+                <div style="font-size: 1.2em; font-weight: bold;">Tutorial</div>
+                <div style="font-size: 0.85em; opacity: 0.9;">Videos & Erklärungen</div>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            if st.button("▶️\nTutorial\nVideos & Erklärungen", key="btn_motivation_theorie", use_container_width=True):
+                st.session_state.motivation_tab = "theorie"
+                st.rerun()
+
+    with col2:
         is_challenges = st.session_state.motivation_tab == "challenges"
         if is_challenges:
             st.markdown(f"""
@@ -100,35 +116,19 @@ def render_motivation_altersstufen(
                 st.session_state.motivation_tab = "challenges"
                 st.rerun()
 
-    with col2:
-        is_theorie = st.session_state.motivation_tab == "theorie"
-        if is_theorie:
-            st.markdown(f"""
-            <div style="background: {color}; color: white; padding: 20px; border-radius: 12px;
-                        text-align: center; cursor: default;">
-                <div style="font-size: 2em;">📚</div>
-                <div style="font-size: 1.2em; font-weight: bold;">Theorie dahinter</div>
-                <div style="font-size: 0.85em; opacity: 0.9;">Wissenschaftlicher Hintergrund</div>
-            </div>
-            """, unsafe_allow_html=True)
-        else:
-            if st.button("📚\nTheorie dahinter\nWissenschaftlicher Hintergrund", key="btn_motivation_theorie", use_container_width=True):
-                st.session_state.motivation_tab = "theorie"
-                st.rerun()
-
     st.divider()
 
     # ==========================================
-    # CHALLENGES-Bereich
+    # THEORIE-Bereich (kommt zuerst - Default)
     # ==========================================
-    if st.session_state.motivation_tab == "challenges":
-        _render_challenges_tab(conn, user_data, xp_callback)
+    if st.session_state.motivation_tab == "theorie":
+        _render_theorie_tab()
 
     # ==========================================
-    # THEORIE-Bereich
+    # CHALLENGES-Bereich (kommt nach Theorie)
     # ==========================================
     else:
-        _render_theorie_tab()
+        _render_challenges_tab(conn, user_data, xp_callback)
 
     # ==========================================
     # ZUSAMMENFASSUNG AM ENDE (außerhalb der Tabs)
@@ -290,60 +290,25 @@ def _render_challenges_fallback():
 # ============================================
 
 def _render_theorie_tab():
-    """Rendert den Theorie-Tab mit Altersstufen-Auswahl."""
-    
-    # Altersstufen-Auswahl als Buttons
-    st.markdown("### Wähle deine Altersstufe:")
+    """Rendert den Theorie-Tab basierend auf User-Altersstufe."""
 
-    col1, col2, col3, col4, col5 = st.columns(5)
-
-    # Session State für Altersstufe initialisieren (separater Key für Motivation)
-    if "selected_age_group_motivation" not in st.session_state:
-        st.session_state.selected_age_group_motivation = "mittelstufe"
-
-    with col1:
-        if st.button("🎒 Grundschule\n(1-4)", key="btn_motiv_gs", use_container_width=True,
-                    type="primary" if st.session_state.selected_age_group_motivation == "grundschule" else "secondary"):
-            st.session_state.selected_age_group_motivation = "grundschule"
-            st.rerun()
-
-    with col2:
-        if st.button("📚 Unterstufe\n(5-7)", key="btn_motiv_us", use_container_width=True,
-                    type="primary" if st.session_state.selected_age_group_motivation == "unterstufe" else "secondary"):
-            st.session_state.selected_age_group_motivation = "unterstufe"
-            st.rerun()
-
-    with col3:
-        if st.button("🎯 Mittelstufe\n(8-10)", key="btn_motiv_ms", use_container_width=True,
-                    type="primary" if st.session_state.selected_age_group_motivation == "mittelstufe" else "secondary"):
-            st.session_state.selected_age_group_motivation = "mittelstufe"
-            st.rerun()
-
-    with col4:
-        if st.button("🎓 Oberstufe\n(11-13)", key="btn_motiv_os", use_container_width=True,
-                    type="primary" if st.session_state.selected_age_group_motivation == "oberstufe" else "secondary"):
-            st.session_state.selected_age_group_motivation = "oberstufe"
-            st.rerun()
-
-    with col5:
-        if st.button("👩‍🏫 Pädagogen", key="btn_motiv_ped", use_container_width=True,
-                    type="primary" if st.session_state.selected_age_group_motivation == "paedagogen" else "secondary"):
-            st.session_state.selected_age_group_motivation = "paedagogen"
-            st.rerun()
-
-    st.divider()
+    # Altersstufe aus User-Profil holen (oben gewählt)
+    age_group = st.session_state.get("current_user_age_group", "unterstufe")
 
     # Content je nach Altersstufe
-    if st.session_state.selected_age_group_motivation == "grundschule":
+    if age_group == "grundschule":
         _render_grundschule_content()
-    elif st.session_state.selected_age_group_motivation == "unterstufe":
+    elif age_group == "unterstufe":
         _render_unterstufe_content()
-    elif st.session_state.selected_age_group_motivation == "mittelstufe":
+    elif age_group == "mittelstufe":
         _render_mittelstufe_content()
-    elif st.session_state.selected_age_group_motivation == "oberstufe":
+    elif age_group == "oberstufe":
         _render_oberstufe_content()
-    elif st.session_state.selected_age_group_motivation == "paedagogen":
+    elif age_group == "paedagogen":
         _render_paedagogen_content()
+    else:
+        # Fallback
+        _render_unterstufe_content()
 
 
 # ============================================
@@ -355,6 +320,12 @@ def _render_grundschule_content():
     """Rendert den Grundschul-Content für Motivation."""
     st.header("🔥 Wieder Bock aufs Lernen – Grundschule")
     st.caption("Für Kinder (1.-4. Klasse) und ihre Eltern")
+
+    # ========== VIDEO-PLATZHALTER ==========
+    st.info("🎬 **Video kommt bald!** Hier erscheint ein erklärendes Video zum Thema.")
+    # Später ersetzen mit:
+    # st.video("https://youtube.com/watch?v=DEIN_VIDEO_LINK")
+    # =======================================
 
     st.markdown("""
     ### 🦸 Du bist ein Entdecker!
@@ -461,6 +432,12 @@ def _render_unterstufe_content():
     """Rendert den Unterstufen-Content für Motivation."""
     st.header("🔥 Wieder Bock aufs Lernen – Unterstufe")
     st.caption("Für Schüler:innen der Klassen 5-7")
+
+    # ========== VIDEO-PLATZHALTER ==========
+    st.info("🎬 **Video kommt bald!** Hier erscheint ein erklärendes Video zum Thema.")
+    # Später ersetzen mit:
+    # st.video("https://youtube.com/watch?v=DEIN_VIDEO_LINK")
+    # =======================================
 
     st.markdown("""
     ### 💡 Motivation ist kein Zufall – sie hat Regeln!
@@ -576,6 +553,12 @@ def _render_mittelstufe_content():
     """Rendert den Mittelstufen-Content für Motivation."""
     st.header("🔥 Wieder Bock aufs Lernen – Mittelstufe")
     st.caption("Für Schüler:innen der Klassen 8-10")
+
+    # ========== VIDEO-PLATZHALTER ==========
+    st.info("🎬 **Video kommt bald!** Hier erscheint ein erklärendes Video zum Thema.")
+    # Später ersetzen mit:
+    # st.video("https://youtube.com/watch?v=DEIN_VIDEO_LINK")
+    # =======================================
 
     st.markdown("""
     ### 🧠 Die Wissenschaft der Motivation
@@ -766,6 +749,12 @@ def _render_oberstufe_content():
     """
     st.header("🔥 Wieder Bock aufs Lernen – Oberstufe")
     st.caption("Für alle, die gerade im Abi-Stress stecken (Klasse 11-13)")
+
+    # ========== VIDEO-PLATZHALTER ==========
+    st.info("🎬 **Video kommt bald!** Hier erscheint ein erklärendes Video zum Thema.")
+    # Später ersetzen mit:
+    # st.video("https://youtube.com/watch?v=DEIN_VIDEO_LINK")
+    # =======================================
 
     # ══════════════════════════════════════════
     # EINSTIEG: REAL TALK
@@ -1113,6 +1102,12 @@ def _render_paedagogen_content():
     """
     st.header("📚 Lernmotivation bei Schülerinnen und Schülern")
     st.caption("Theoretische Grundlagen, empirische Befunde und Handlungsempfehlungen für die pädagogische Praxis")
+
+    # ========== VIDEO-PLATZHALTER ==========
+    st.info("🎬 **Video kommt bald!** Hier erscheint ein erklärendes Video zum Thema.")
+    # Später ersetzen mit:
+    # st.video("https://youtube.com/watch?v=DEIN_VIDEO_LINK")
+    # =======================================
 
     # Abstract
     st.info("""
