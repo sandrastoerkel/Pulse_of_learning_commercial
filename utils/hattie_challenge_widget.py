@@ -182,32 +182,33 @@ def render_challenge_phase1(user_id: str, stats: dict, color: str):
     3. Mach die Aufgabe und trag dann dein echtes Ergebnis ein
     """)
 
+    # Auswahl AUSSERHALB des Formulars (damit sie reaktiv ist)
+    st.markdown("**📊 Was möchtest du schätzen?**")
+    if is_oberstufe:
+        prediction_type = st.radio(
+            "Schätzungstyp",
+            options=["punkte", "prozent"],
+            format_func=lambda x: "🎯 Punkte (0-15)" if x == "punkte" else "📈 Prozent richtig",
+            horizontal=True,
+            label_visibility="collapsed",
+            key="prediction_type_radio"
+        )
+    else:
+        prediction_type = st.radio(
+            "Schätzungstyp",
+            options=["note", "prozent"],
+            format_func=lambda x: "🎯 Note (1-6)" if x == "note" else "📈 Prozent richtig",
+            horizontal=True,
+            label_visibility="collapsed",
+            key="prediction_type_radio"
+        )
+
     with st.form("new_challenge_form"):
-        col1, col2 = st.columns(2)
-
-        with col1:
-            subject = st.selectbox(
-                "📚 Fach",
-                options=SUBJECTS,
-                index=0
-            )
-
-        with col2:
-            # Auswahl: Prozent oder Note/Punkte
-            if is_oberstufe:
-                prediction_type = st.radio(
-                    "📊 Was möchtest du schätzen?",
-                    options=["punkte", "prozent"],
-                    format_func=lambda x: "🎯 Punkte (0-15)" if x == "punkte" else "📈 Prozent richtig",
-                    horizontal=True
-                )
-            else:
-                prediction_type = st.radio(
-                    "📊 Was möchtest du schätzen?",
-                    options=["note", "prozent"],
-                    format_func=lambda x: "🎯 Note (1-6)" if x == "note" else "📈 Prozent richtig",
-                    horizontal=True
-                )
+        subject = st.selectbox(
+            "📚 Fach",
+            options=SUBJECTS,
+            index=0
+        )
 
         # Eingabefeld je nach Auswahl
         if prediction_type == "prozent":
